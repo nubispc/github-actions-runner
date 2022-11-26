@@ -1,4 +1,9 @@
-FROM quay.io/evryfs/base-ubuntu:focal-20220922
+FROM ubuntu:20.04
+
+LABEL baseimage="ubuntu:20.04"
+LABEL additional="python"
+LABEL gh_runner_image_tag="ubuntu-20.04_slim"
+LABEL actions_runner_input_label="gkoletsos,arpakolla,aekara"
 
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
 ARG UBUNTU_VERSION=2004
@@ -12,14 +17,15 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
-    sudo=1.8.* \
+    sudo \
     lsb-release=11.1.* \
-    software-properties-common=0.99.* \
+    software-properties-common \
     gnupg-agent=2.2.* \
     openssh-client=1:8.* \
     make=4.*\
     rsync \
     wget \
+    curl \
     jq=1.* \
     amazon-ecr-credential-helper=0.3.* && \
     apt-get -y clean && \
@@ -48,7 +54,7 @@ COPY scripts/ /usr/local/bin/
 
 # Install additional distro packages and runner virtual envs
 ARG VIRTUAL_ENV_PACKAGES=""
-ARG VIRTUAL_ENV_INSTALLS="basic python aws azure-cli docker-compose nodejs"
+ARG VIRTUAL_ENV_INSTALLS="basic python docker-compose nodejs"
 RUN apt-get -y update && \
     ( [ -z "$VIRTUAL_ENV_PACKAGES" ] || apt-get -y --no-install-recommends install $VIRTUAL_ENV_PACKAGES ) && \
     . /usr/local/bin/install-from-virtual-env-helpers && \
