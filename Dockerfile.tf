@@ -11,6 +11,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+#weird bug
+RUN mkdir -p /tmp && chmod 777 /tmp && chmod +t /tmp
+
 # Install base packages.
 RUN apt update && TZ=Etc/UTC \
     apt-get install -y --no-install-recommends \
@@ -93,20 +96,27 @@ RUN apt-get update && \
 # Install the Bazel version 5.3.0
 ARG BAZEL_VERSION=5.3.0
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl \
-    gnupg \
-    && curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg && \
-    mv bazel.gpg /etc/apt/trusted.gpg.d/ && \
-    echo "deb [arch=$(dpkg --print-architecture)] https://storage.googleapis.com/bazel-apt stable jdk1.8" > /etc/apt/sources.list.d/bazel.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends bazel-${BAZEL_VERSION} && \
-    ln -s /usr/bin/bazel-${BAZEL_VERSION} /usr/bin/bazel && \
-    ldconfig && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#RUN apt-get update && \
+#    apt-get install -y --no-install-recommends \
+#    curl \
+#    gnupg \
+#    && curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg && \
+#    mv bazel.gpg /etc/apt/trusted.gpg.d/ && \
+#    echo "deb [arch=$(dpkg --print-architecture)] https://storage.googleapis.com/bazel-apt stable jdk1.8" > /etc/apt/sources.list.d/bazel.list && \
+#    apt-get update && \
+#    apt-get install -y --no-install-recommends bazel-${BAZEL_VERSION} && \
+#    ln -s /usr/bin/bazel-${BAZEL_VERSION} /usr/bin/bazel && \
+#    ldconfig && \
+#    apt-get -y clean && \
+#    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+
+
+RUN export ARCH=$(uname -m | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
+      wget https://github.com/bazelbuild/bazelisk/releases/download/v1.16.0/bazelisk-linux-$ARCH && \
+      chmod +x bazelisk-linux-$ARCH && \
+      cp bazelisk-linux-$ARCH /usr/bin/bazel-${BAZEL_VERSION} && \
+      ln -s /usr/bin/bazel-${BAZEL_VERSION} /usr/bin/bazel
 
 
 # Clone the TensorFlow
@@ -136,8 +146,6 @@ RUN cd /tensorflow \
             --jobs=4 \
             --config=v2 \
             --copt=-O3 \
-            --copt=-m64 \
-            --copt=-march=native \
             --config=opt \
             --verbose_failures \
             //tensorflow:tensorflow_cc \
