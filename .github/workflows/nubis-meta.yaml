@@ -68,6 +68,7 @@ jobs:
     strategy:
       matrix:
         dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile)) }}
+      fail-fast: false
     with:
       matrix: ${{ needs.prepare.outputs.matrix }}
       #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
