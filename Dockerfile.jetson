@@ -1,0 +1,164 @@
+FROM ubuntu:20.04
+
+# This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
+ARG UBUNTU_VERSION=2004
+ARG VIRTUAL_ENVIRONMENT_VERSION=ubuntu20/20230109.1
+
+ENV UBUNTU_VERSION=${UBUNTU_VERSION} VIRTUAL_ENVIRONMENT_VERSION=${VIRTUAL_ENVIRONMENT_VERSION}
+
+# Set environment variable to prevent interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Install base packages.
+RUN apt update && TZ=Etc/UTC \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    sudo=1.8.* \
+    lsb-release=11.1.* \
+    software-properties-common=0.99.* \
+    gnupg-agent=2.2.* \
+    openssh-client=1:8.* \
+    make=4.*\
+    rsync \
+    wget \
+    jq=1.* \
+    gcc-8 \
+    g++-8 \
+    clang \
+    llvm \
+    curl && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add sudo rule for runner user
+RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
+
+# Update git.
+RUN add-apt-repository -y ppa:git-core/ppa && \
+    apt-get update && \
+    apt-get -y install --no-install-recommends git && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install docker cli.
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg > /etc/apt/trusted.gpg.d/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends docker-ce-cli=5:20.10.* && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add Kitware APT repository for updated CMake version
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    apt-transport-https ca-certificates gnupg && \
+    apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-latest.asc' && \
+    echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list && \
+    apt-get update && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+
+# Install build-essential and update cmake
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gcc-8 g++-8 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
+    apt-get install -y --no-install-recommends build-essential cmake && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+
+### Install NVIDIA CUDA, CUDNN and TENSORRT
+ARG OS=ubuntu2004
+RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+	dpkg -i nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+	apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/7fa2af80.pub && \
+	wget https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/cuda-${OS}.pin && \
+	mv cuda-${OS}.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+	apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/3bf863cc.pub && \
+	add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/ /" && \
+	apt-get update && \
+	apt-get install -y libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev && \
+	rm -rf /var/cache/apt/archives /var/lib/apt/lists
+
+# Install OpenCV
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  libopencv-dev && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install TensorRT
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev libnvinfer-lean8 libnvinfer-vc-plugin8 && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Python and Numpy
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  python3-dev \
+  python3-pip \
+  python3-setuptools \
+  python3-wheel \
+  python3-numpy && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+
+
+# Copy scripts.
+COPY scripts/ /usr/local/bin/
+
+# Install additional distro packages and runner virtual envs
+ARG VIRTUAL_ENV_PACKAGES=""
+ARG VIRTUAL_ENV_INSTALLS="basic python nodejs"
+RUN apt-get -y update && \
+    ( [ -z "$VIRTUAL_ENV_PACKAGES" ] || apt-get -y --no-install-recommends install $VIRTUAL_ENV_PACKAGES ) && \
+    . /usr/local/bin/install-from-virtual-env-helpers && \
+    for package in ${VIRTUAL_ENV_INSTALLS}; do \
+        install-from-virtual-env $package;  \
+    done && \
+    apt-get -y install --no-install-recommends gosu=1.* && \
+    apt-get -y clean && \
+    rm -rf /virtual-environments /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+
+# Set default gcc and g++ to version 8
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
+
+# Build jetson-inference and download models
+RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/jetson-inference.git && \
+	cd jetson-inference && \
+	git submodule update --init && \
+	mkdir build && \
+	cd build && \
+	cmake ../ && \
+	make -j$(nproc) install && \
+	cd /jetson-inference/tools && \
+	./download-models.sh 0 && \
+	cd /jetson-inference/build && \
+	./install-pytorch.sh 0 && \
+	
+	cd / && cp -avf /jetson-inference/data /usr/local/data && \
+	cp -avf /jetson-inference/utils/image/stb /usr/local/include && \
+	rm -rf /jetson-inference
+	
+
+# Install runner and its dependencies.
+RUN groupadd -g 121 runner && useradd -mr -d /home/runner -u 1001 -g 121 runner && \
+    install-runner
+
+COPY entrypoint.sh /
+WORKDIR /home/runner
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]
