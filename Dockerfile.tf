@@ -142,8 +142,7 @@ RUN cd /tensorflow \
 # https://github.com/nubispc/container-build-example/blob/86d84a184f90781c3eb2d47c87502fe14ba50361/Dockerfile.tensorflow-plugin#L106
 RUN cd /tensorflow \
     && bazel build --local_ram_resources=HOST_RAM*.7 \
-            --local_cpu_resources=HOST_CPUS-1 \
-            --jobs=4 \
+            --local_cpu_resources=HOST_CPUS-3 \
             --config=v2 \
             --copt=-O3 \
             --config=opt \
