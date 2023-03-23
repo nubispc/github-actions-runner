@@ -1,8 +1,6 @@
 name: build
 on:
   push:
-    branches:
-    - nubis-runners-meta
   workflow_dispatch:
 
 env:
@@ -56,7 +54,7 @@ jobs:
           if [[ $JSON == *, ]]; then
           JSON="${JSON%?}"
           fi
-          JSON="$JSON], \"architecture\":[\"x86_64\", \"arm64\"]}"
+          JSON="$JSON], \"architecture\":[\"x86_64\", \"aarch64\"]}"
           echo $JSON
           # Set output
           echo "::set-output name=matrix::$( echo "$JSON" )"

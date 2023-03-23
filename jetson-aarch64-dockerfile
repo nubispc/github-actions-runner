@@ -1,0 +1,30 @@
+FROM dustynv/jetson-inference:r35.1.0
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	cmake \
+	git \
+	libpython3-dev \
+	pkg-config \
+	python3-numpy \
+	sudo \
+	wget \
+	&& rm -rf /var/lib/apt/lists/*
+
+# we need this for installing download-models.sh and base network models.
+RUN cd /jetson-inference && \
+	git clone https://github.com/dusty-nv/jetson-inference --depth 1
+
+RUN cd /jetson-inference && \
+	cp -a utils/image/stb /usr/local/include && \
+	mkdir /usr/local/share/jetson-inference/tools && \
+	cp tools/download-models.sh /usr/local/share/jetson-inference/tools/ && \
+	mkdir /usr/local/share/jetson-inference/data && \
+	cp -r jetson-inference/data/networks /usr/local/share/jetson-inference/data/ && \
+	sed 's/BUILD_INTERACTIVE=.*/BUILD_INTERACTIVE=0/g' \
+		-i /usr/local/share/jetson-inference/tools/download-models.sh && \
+	unlink /usr/local/bin/images && unlink /usr/local/bin/networks && \
+	ln -s /usr/local/share/jetson-inference/data/networks /usr/local/bin/
+
+RUN rm -rf /jetson-inference
+
+WORKDIR /
