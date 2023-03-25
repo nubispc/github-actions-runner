@@ -125,23 +125,10 @@ ARG TF_VERSION=v2.11.0
 RUN git clone https://github.com/tensorflow/tensorflow.git /tensorflow \
     && cd /tensorflow \
     && git checkout ${TF_VERSION} \
-    && git submodule update --init --recursive
-
-# Configure TensorFlow build
-RUN cd /tensorflow \
-    && ./configure
-
-
-# Build TensorFlow with bazel example
-# RUN cd /tensorflow \
-#    && bazel build --config=opt //tensorflow/tools/pip_package:build_pip_package \
-#    && bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
-
-
-# Build TensorFlow with bazel
-# https://github.com/nubispc/container-build-example/blob/86d84a184f90781c3eb2d47c87502fe14ba50361/Dockerfile.tensorflow-plugin#L106
-RUN cd /tensorflow \
-    && bazel build --local_ram_resources=HOST_RAM*.9 \
+    && git submodule update --init --recursive && \
+    cd /tensorflow && \
+    ./configure && \
+    bazel build --local_ram_resources=HOST_RAM*.9 \
             --local_cpu_resources=HOST_CPUS-1 \
             --config=v2 \
             --copt=-O3 \
@@ -152,7 +139,17 @@ RUN cd /tensorflow \
             //tensorflow:tensorflow \
             //tensorflow:tensorflow_framework \
             //tensorflow/c:c_api \
-            //tensorflow/tools/lib_package:libtensorflow
+            //tensorflow/tools/lib_package:libtensorflow && \
+    mkdir -p /opt/tensorflow/lib && \
+    cp -r /tensorflow/bazel-bin/tensorflow/* /opt/tensorflow/lib/ && \
+    cd /opt/tensorflow/lib && \
+    ln -s libtensorflow_cc.so.${TF_VERSION/#v} libtensorflow_cc.so && \
+    ln -s libtensorflow_cc.so.${TF_VERSION/#v} libtensorflow_cc.so.2 && \
+    ln -s libtensorflow.so.${TF_VERSION/#v} libtensorflow.so && \
+    ln -s libtensorflow.so.${TF_VERSION/#v} libtensorflow.so.2 && \
+    rm -rf /root/.cache && \
+    rm -rf /tensorflow
+
 
 # Copy scripts.
 COPY scripts/ /usr/local/bin/
@@ -173,6 +170,11 @@ RUN apt-get -y update && \
 # Install runner and its dependencies.
 RUN groupadd -g 121 runner && useradd -mr -d /home/runner -u 1001 -g 121 runner && \
     install-runner
+
+RUN wget https://raw.githubusercontent.com/tensorflow/tensorflow/v2.11.0/tensorflow/c/c_api_internal.h \
+     -O /opt/tensorflow/lib/include/tensorflow/c/c_api_internal.h && \
+    wget https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/core/framework/op_gen_lib.h \
+     -O /opt/tensorflow/lib/include/tensorflow/core/framework/op_gen_lib.h
 
 COPY entrypoint.sh /
 WORKDIR /home/runner
