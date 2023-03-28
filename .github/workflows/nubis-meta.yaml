@@ -1,4 +1,4 @@
-name: build
+name: Build NBFC runners
 on:
   push:
     branches:
