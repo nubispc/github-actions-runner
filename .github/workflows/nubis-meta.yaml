@@ -1,8 +1,8 @@
-name: build
+name: Build NBFC runners
 on:
   push:
     branches:
-      - nubis-runners
+      - nubis-runners-torch
   workflow_dispatch:
 
 env:
@@ -34,7 +34,7 @@ jobs:
       - name: Check files
         id: dockerfiles 
         run: |
-          export dockerfiles=$( ls -1 Dockerfile.* )
+          export dockerfiles=$( ls -1 Dockerfile.torch )
           echo "$dockerfiles"
           # Escape newlines (replace \n with %0A)
           echo "::set-output name=dockerfiles::$( echo "$dockerfiles" | sed ':a;N;$!ba;s/\n/%0A/g' )"
