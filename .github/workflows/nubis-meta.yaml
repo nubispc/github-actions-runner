@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - nubis-runners
+      - testing-cosign
   workflow_dispatch:
 
 env:
