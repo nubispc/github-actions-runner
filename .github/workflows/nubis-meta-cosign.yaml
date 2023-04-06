@@ -82,7 +82,7 @@ jobs:
 
   build:
     needs: [prepare]
-    uses: ./.github/workflows/nubis-build.yaml
+    uses: ./.github/workflows/nubis-build-manifestfix.yaml
     secrets: inherit
     strategy:
       matrix:
