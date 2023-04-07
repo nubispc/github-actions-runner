@@ -205,22 +205,8 @@ jobs:
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
     
-    - name: Sign the published Docker image
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      env:
-        COSIGN_EXPERIMENTAL: "true"
-      # This step uses the identity token to provision an ephemeral certificate
-      # against the sigstore community Fulcio instance.
-      run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
-    
-    - name: Clean up Docker Context for Buildx
-      id: buildx-context-cleanup
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      run: |
-          docker context remove builders || true
 
-    - name: Create manifest for ${{ needs.build.outputs.image_name }}
-      id: create-manifest
+    - name: Sign and push manifest for ${{ needs.build.outputs.image_name }}
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
           VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
@@ -229,22 +215,8 @@ jobs:
           docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) 
+          cosign sign ${{ steps.set-image-name.outputs.image_name }}:generic
           docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
-    
-    
-    - name: Sign the published Docker image
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      env:
-        COSIGN_EXPERIMENTAL: "true"
-      # This step uses the identity token to provision an ephemeral certificate
-      # against the sigstore community Fulcio instance.
-      run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
-    
-    
-    - name: Clean up Docker Context for Buildx
-      id: buildx-context-cleanup
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      run: |
-          docker context remove builders || true
+
