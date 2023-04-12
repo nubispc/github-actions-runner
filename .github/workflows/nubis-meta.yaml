@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - nubis-runners
+      - feat_aarch32
   workflow_dispatch:
 
 env:
