@@ -162,8 +162,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-    # This is used to complete the identity challenge
-    # with sigstore/fulcio when running outside of PRs.
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
     steps:
@@ -171,50 +171,72 @@ jobs:
     - uses: benjlevesque/short-sha@v2.2
       id: short-sha
       with:
-       length: 7
+        length: 7
 
+    # Login against a Docker registry except on PR
+    # https://github.com/docker/login-action
+    - name: Log into registry ${{ inputs.REGISTRY }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      with:
+        registry: ${{ inputs.REGISTRY }}
+        username: ${{ secrets.HARBOR_USER }}
+        password: ${{ secrets.HARBOR_SECRET }}
+
+    - name: Set image name
+      id: set-image-name
+      run: |
+          NAME=$( echo "${{ needs.build.outputs.image_name }}" )
+          REGISTRY=$( echo "${{ inputs.REGISTRY }}" )
+          #NAMESPACE="runners"
+          #echo "image_name=$REGISTRY/$NAMESPACE/$NAME" >> "$GITHUB_OUTPUT"
+          echo "image_name=$REGISTRY/$NAME" >> "$GITHUB_OUTPUT"
+          
     - name: Install cosign
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       uses: sigstore/cosign-installer@ca922a571676e06d3299cce5d520e178ba89a276
       with:
         cosign-release: 'v1.13.1'
-
     - name: Check install!
-    if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-    run: cosign version
-    
-    - name: Set up Docker Context for Buildx
-      id: buildx-context
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: cosign version
+      
+    - name: Create manifest for ${{ needs.build.outputs.image_name }}
+      id: debug-echo
       run: |
-        docker context create builders || true
+          VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
+          VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
+          echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
+          echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) 
+          echo docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
+      env:
+        SHA: ${{ steps.short-sha.outputs.sha }}
 
-  # Login against a Docker registry except on PR
-  # https://github.com/docker/login-action
-  - name: Log into registry ${{ inputs.REGISTRY }}
-    if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-    uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
-    with:
-      registry: ${{ inputs.REGISTRY }}
-      username: ${{ secrets.HARBOR_USER }}
-      password: ${{ secrets.HARBOR_SECRET }}
-
-  - name: Set image name
-    id: set-image-name
-    run: |
-        NAME=$( echo "${{ needs.build.outputs.image_name }}" )
-        REGISTRY=$( echo "${{ inputs.REGISTRY }}" )
-        echo "image_name=$REGISTRY/$NAME" >> "$GITHUB_OUTPUT"
-
-  - name: Create manifest for ${{ needs.build.outputs.image_name }}
-    id: create-manifest
-    if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-    run: |
-        VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
-        VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
-        docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
-        docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
-            --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
-            --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2)
-        cosign sign docker.io/${{ steps.set-image-name.outputs.image_name }}:generic \
-            --key cosign.key --cert cosign.crt --scope "repository:${{ steps.set-image-name.outputs.image_name }}:manifest-list" --dry-run \
-            | grep 'SIGNED'
+    - name: Create manifest for ${{ needs.build.outputs.image_name }}
+      id: create-manifest
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: |
+          VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
+          VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
+          docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
+          docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) 
+          docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
+      env:
+        SHA: ${{ steps.short-sha.outputs.sha }}
+        
+    - name: Sign the published Docker image
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      # This step uses the identity token to provision an ephemeral certificate
+      # against the sigstore community Fulcio instance.
+      run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+      
+        
+        
+        
+        
