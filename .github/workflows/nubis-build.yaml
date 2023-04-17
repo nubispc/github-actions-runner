@@ -192,6 +192,16 @@ jobs:
           #echo "image_name=$REGISTRY/$NAMESPACE/$NAME" >> "$GITHUB_OUTPUT"
           echo "image_name=$REGISTRY/$NAME" >> "$GITHUB_OUTPUT"
 
+    - name: Install cosign
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: sigstore/cosign-installer@ca922a571676e06d3299cce5d520e178ba89a276
+      with:
+        cosign-release: 'v1.13.1'
+
+    - name: Check install!
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: cosign version
+ 
     - name: Create manifest for ${{ needs.build.outputs.image_name }}
       id: debug-echo
       run: |
@@ -219,7 +229,15 @@ jobs:
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR3) 
-          docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
+          VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`
+          echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
 
+    - name: Sign the published Docker image
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+      # This step uses the identity token to provision an ephemeral certificate
+      # against the sigstore community Fulcio instance.
+      run: echo "${{ steps.set-image-name.outputs.image_name }}" | xargs -I {} cosign sign {}@${{ steps.create-manifest.outputs.manifest_sha }}
