@@ -34,7 +34,7 @@ jobs:
       - name: Check files
         id: dockerfiles 
         run: |
-          export dockerfiles=$( ls -1 Dockerfile.rust )
+          export dockerfiles=$( ls -1 Dockerfile.* )
           echo "$dockerfiles"
           # Escape newlines (replace \n with %0A)
           echo "::set-output name=dockerfiles::$( echo "$dockerfiles" | sed ':a;N;$!ba;s/\n/%0A/g' )"
@@ -61,8 +61,17 @@ jobs:
           # Set output
           echo "::set-output name=matrix::$( echo "$JSON" )"
   
-  build:
+  build-base:
     needs: [prepare]
+    uses: ./.github/workflows/nubis-build.yaml
+    secrets: inherit
+    with:
+      matrix: ${{ needs.prepare.outputs.matrix }}
+      dockerfile: "Dockerfile.base"
+      registry: ${{ needs.prepare.outputs.registry }}
+  
+  build:
+    needs: [prepare, build-base]
     uses: ./.github/workflows/nubis-build.yaml
     secrets: inherit
     strategy:
