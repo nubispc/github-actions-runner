@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - feat_aarch32
+      - feat_aggregate
   workflow_dispatch:
 
 env:
@@ -34,7 +34,7 @@ jobs:
       - name: Check files
         id: dockerfiles 
         run: |
-          export dockerfiles=$( ls -1 Dockerfile.rust )
+          export dockerfiles=$( ls -1 Dockerfile.* )
           echo "$dockerfiles"
           # Escape newlines (replace \n with %0A)
           echo "::set-output name=dockerfiles::$( echo "$dockerfiles" | sed ':a;N;$!ba;s/\n/%0A/g' )"
@@ -74,5 +74,6 @@ jobs:
       #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
       dockerfile: ${{ matrix.dockerfiles }}
       registry: ${{ needs.prepare.outputs.registry }}
+      depends: ${{ fromJSON('["build", ""]')[matrix.dockerfiles == 'Dockerfile.base'] }}
 
 

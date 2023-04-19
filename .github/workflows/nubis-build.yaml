@@ -14,9 +14,14 @@ on:
         required: true
         type: string
 
+      depends:
+        required: true
+        type: string
+
 jobs:
   setup:
     runs-on: [ self-hosted, gcc, lite ]
+    needs: ["${{ inputs.depends }}"]
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
     steps:
@@ -41,6 +46,7 @@ jobs:
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    name: Build-${{inputs.dockerfile}}-${{matrix.architecture}}
     
     permissions:
       contents: read
