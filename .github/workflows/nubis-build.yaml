@@ -21,7 +21,7 @@ on:
 jobs:
   setup:
     runs-on: [ self-hosted, gcc, lite ]
-    needs: ["${{ inputs.depends }}"]
+    needs: [${{ inputs.depends }}]
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
     steps:
