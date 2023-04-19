@@ -21,7 +21,6 @@ on:
 jobs:
   setup:
     runs-on: [ self-hosted, gcc, lite ]
-    needs: [${{ inputs.depends }}]
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
     steps:
@@ -64,7 +63,7 @@ jobs:
     outputs:
       image_name: ${{ steps.build.outputs.image_name }}
 
-    needs: [setup]
+    needs: [setup, ${{ inputs.depends }}]
     steps:
     - name: Build
       id: build
