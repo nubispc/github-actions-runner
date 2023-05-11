@@ -2,7 +2,6 @@ FROM harbor.nbfc.io/nubificus/gh-actions-runner-base:generic
 #ARG BASE_IMAGE
 #FROM ${BASE_IMAGE}
 
-
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
 ARG UBUNTU_VERSION=2004
 ARG VIRTUAL_ENVIRONMENT_VERSION=ubuntu20/20230109.1
@@ -20,8 +19,6 @@ RUN apt update && TZ=Etc/UTC \
     apt-get install -y --no-install-recommends \
     gcc \
     g++ \
-    clang \
-    llvm \
     curl && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -40,12 +37,27 @@ RUN apt-get update && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install rust using rustup
-ENV RUSTUP_HOME=/opt/rust CARGO_HOME=/opt/cargo PATH=/opt/cargo/bin:$PATH
-RUN wget --https-only --secure-protocol=TLSv1_2 -O- https://sh.rustup.rs | sh /dev/stdin -y
-RUN chmod a+w /opt/cargo
-RUN chmod a+w /opt/rust
+# Install Go depending on the system architecture
+ENV GO_VERSION=1.20.3
+#ARG ARCH_INFO="x86_64"
+RUN export ARCH_INFO=$(echo aarch64)
+ENV ARCH_INFO=${ARCH_INFO}
 
+RUN export ARCH_INFO=$(echo aarch64) && echo ${ARCH_INFO} && echo "blah" && sudo mkdir -p /golang && \
+    if [ "$ARCH_INFO" = "x86_64" ]; then \
+        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz; \
+    elif [ "$ARCH_INFO" = "arm64" ] || [ "$ARCH_INFO" = "aarch64" ]; then \
+        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz; \
+    fi && \
+    sudo tar -C /golang -xzf go_archive.tar.gz && \
+    rm go_archive.tar.gz && \
+    ln -s /golang/go/bin/go /usr/local/bin/go   # Create a symbolic link to the Go binary in /usr/local/bin
+
+# Set Go environment variables
+ENV PATH=/golang/go/bin:$PATH
+ENV GOROOT=/golang/go
+ENV GOPATH=/home/runner/go
+RUN go version
 
 # Copy scripts.
 COPY scripts/ /usr/local/bin/
