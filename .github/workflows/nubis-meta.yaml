@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - feat_aarch32
+      - feat_build_rest
   workflow_dispatch:
 
 env:
@@ -34,7 +34,7 @@ jobs:
       - name: Check files
         id: dockerfiles 
         run: |
-          export dockerfiles=$( ls -1 Dockerfile.gcc-lite Dockerfile.rust )
+          export dockerfiles=$( ls -1 Dockerfile.jetson Dockerfile.tf Dockerfile.torch )
           echo "$dockerfiles"
           # Escape newlines (replace \n with %0A)
           echo "::set-output name=dockerfiles::$( echo "$dockerfiles" | sed ':a;N;$!ba;s/\n/%0A/g' )"
@@ -56,22 +56,13 @@ jobs:
           if [[ $JSON == *, ]]; then
           JSON="${JSON%?}"
           fi
-          JSON="$JSON], \"architecture\":[\"x86_64\", \"aarch64\", \"armv7l\"]}"
+          JSON="$JSON], \"architecture\":[\"x86_64\", \"aarch64\"]}"
           echo $JSON
           # Set output
           echo "::set-output name=matrix::$( echo "$JSON" )"
   
-  build-base:
-    needs: [prepare]
-    uses: ./.github/workflows/nubis-build.yaml
-    secrets: inherit
-    with:
-      matrix: ${{ needs.prepare.outputs.matrix }}
-      dockerfile: "Dockerfile.base"
-      registry: ${{ needs.prepare.outputs.registry }}
-  
   build:
-    needs: [prepare, build-base]
+    needs: [prepare]
     uses: ./.github/workflows/nubis-build.yaml
     secrets: inherit
     strategy:
