@@ -1,4 +1,7 @@
-FROM ubuntu:20.04
+FROM harbor.nbfc.io/nubificus/gh-actions-runner-gcc-lite:generic
+#ARG BASE_IMAGE
+#FROM ${BASE_IMAGE}
+
 
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
 ARG UBUNTU_VERSION=2004
@@ -11,55 +14,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install base packages.
+USER root
 RUN apt update && TZ=Etc/UTC \
     apt-get install -y --no-install-recommends \
-    ca-certificates \
-    sudo=1.8.* \
-    lsb-release=11.1.* \
-    software-properties-common=0.99.* \
-    gnupg-agent=2.2.* \
-    openssh-client=1:8.* \
-    make=4.*\
-    rsync \
-    wget \
-    jq=1.* \
-    gcc-8 \
-    g++-8 \
-    clang \
-    llvm \
+    gcc \
+    g++ \
     curl && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Add sudo rule for runner user
 RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
-
-# Update git.
-RUN add-apt-repository -y ppa:git-core/ppa && \
-    apt-get update && \
-    apt-get -y install --no-install-recommends git && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Install docker cli.
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg > /etc/apt/trusted.gpg.d/docker.asc && \
-    echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce-cli=5:20.10.* && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Add Kitware APT repository for updated CMake version
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    apt-transport-https ca-certificates gnupg && \
-    apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-latest.asc' && \
-    echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list && \
-    apt-get update && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 
 # Install build-essential and update cmake
 RUN apt-get update && \
@@ -71,7 +36,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 
 ### Install NVIDIA CUDA, CUDNN and TENSORRT
 ARG OS=ubuntu2004
@@ -113,26 +77,7 @@ RUN apt-get update && \
   apt-get -y clean && \
   rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
-
-# Copy scripts.
-COPY scripts/ /usr/local/bin/
-
-# Install additional distro packages and runner virtual envs
-ARG VIRTUAL_ENV_PACKAGES=""
-ARG VIRTUAL_ENV_INSTALLS="basic python nodejs"
-RUN apt-get -y update && \
-    ( [ -z "$VIRTUAL_ENV_PACKAGES" ] || apt-get -y --no-install-recommends install $VIRTUAL_ENV_PACKAGES ) && \
-    . /usr/local/bin/install-from-virtual-env-helpers && \
-    for package in ${VIRTUAL_ENV_INSTALLS}; do \
-        install-from-virtual-env $package;  \
-    done && \
-    apt-get -y install --no-install-recommends gosu=1.* && \
-    apt-get -y clean && \
-    rm -rf /virtual-environments /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-
-# Set default gcc and g++ to version 8
+## Set default gcc and g++ to version 8
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
 
@@ -148,15 +93,13 @@ RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/j
 	./download-models.sh 0 && \
 	cd /jetson-inference/build && \
 	./install-pytorch.sh 0 && \
-	
 	cd / && cp -avf /jetson-inference/data /usr/local/data && \
 	cp -avf /jetson-inference/utils/image/stb /usr/local/include && \
 	rm -rf /jetson-inference
-	
 
-# Install runner and its dependencies.
-RUN groupadd -g 121 runner && useradd -mr -d /home/runner -u 1001 -g 121 runner && \
-    install-runner
+
+# Copy scripts.
+COPY scripts/ /usr/local/bin/
 
 COPY entrypoint.sh /
 WORKDIR /home/runner
