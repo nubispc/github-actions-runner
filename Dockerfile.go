@@ -44,9 +44,9 @@ ENV ARCH_INFO=${ARCH_INFO}
 
 RUN sudo mkdir -p /golang && \
     if [ "$ARCH_INFO" = "x86_64" ]; then \
-        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz; \
+        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
     elif [ "$ARCH_INFO" = "arm64" ] || [ "$ARCH_INFO" = "aarch64" ]; then \
-        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz; \
+        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz \
     fi && \
     sudo tar -C /golang -xzf go_archive.tar.gz && \
     rm go_archive.tar.gz && \
