@@ -48,7 +48,7 @@ RUN sudo mkdir -p /golang && \
     elif [ "$ARCH_INFO" = "arm64" ] || [ "$ARCH_INFO" = "aarch64" ]; then \
         filename=go${GO_VERSION}.linux-arm64.tar.gz \
     fi && \
-    wget https://go.dev/dl/$filename -o /tmp/$filename
+    wget https://go.dev/dl/$filename -o /tmp/$filename && \
     sudo tar -C /golang -xzf /tmp/$filename && \
     rm $filename && \
     ln -s /golang/go/bin/go /usr/local/bin/go   # Create a symbolic link to the Go binary in /usr/local/bin
