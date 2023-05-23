@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - feat_build_rest
+      - feat_build_rust
   workflow_dispatch:
 
 env:
