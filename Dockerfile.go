@@ -44,12 +44,13 @@ ENV ARCH_INFO=${ARCH_INFO}
 
 RUN sudo mkdir -p /golang && \
     if [ "$ARCH_INFO" = "x86_64" ]; then \
-        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
+        filename=go${GO_VERSION}.linux-amd64.tar.gz
     elif [ "$ARCH_INFO" = "arm64" ] || [ "$ARCH_INFO" = "aarch64" ]; then \
-        curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz \
+        filename=go${GO_VERSION}.linux-arm64.tar.gz
     fi && \
-    sudo tar -C /golang -xzf go_archive.tar.gz && \
-    rm go_archive.tar.gz && \
+    wget https://go.dev/dl/$filename -o /tmp/$filename
+    sudo tar -C /golang -xzf /tmp/$filename && \
+    rm $filename && \
     ln -s /golang/go/bin/go /usr/local/bin/go   # Create a symbolic link to the Go binary in /usr/local/bin
 
 # Set Go environment variables
