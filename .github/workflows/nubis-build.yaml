@@ -207,10 +207,12 @@ jobs:
       run: |
           VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
           VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
+          VAR3=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[2]) }}-$SHA )
           echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
           echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
-              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2)
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) \
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR3) 
           echo docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
@@ -221,10 +223,12 @@ jobs:
       run: |
           VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
           VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
+          VAR3=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[2]) }}-$SHA )
           docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
           docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
-              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2)
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) \
+              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR3) 
           VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`
           echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"
       env:

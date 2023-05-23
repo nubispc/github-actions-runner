@@ -34,7 +34,7 @@ jobs:
       - name: Check files
         id: dockerfiles 
         run: |
-          export dockerfiles=$( ls -1 Dockerfile.go )
+          export dockerfiles=$( ls -1 Dockerfile.rust )
           echo "$dockerfiles"
           # Escape newlines (replace \n with %0A)
           echo "::set-output name=dockerfiles::$( echo "$dockerfiles" | sed ':a;N;$!ba;s/\n/%0A/g' )"
@@ -56,7 +56,7 @@ jobs:
           if [[ $JSON == *, ]]; then
           JSON="${JSON%?}"
           fi
-          JSON="$JSON], \"architecture\":[\"x86_64\", \"aarch64\"]}"
+          JSON="$JSON], \"architecture\":[\"x86_64\", \"aarch64\"\, \"armv7l\"]}"
           echo $JSON
           # Set output
           echo "::set-output name=matrix::$( echo "$JSON" )"
