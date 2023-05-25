@@ -32,8 +32,9 @@ RUN apt-get update && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
     apt-get install -y --no-install-recommends gcc-8 g++-8 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
     apt-get install -y --no-install-recommends build-essential cmake && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
+    update-alternatives --set gcc /usr/bin/gcc-8 && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -81,6 +82,7 @@ RUN apt-get update && \
 #RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
 #    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
 
+WORKDIR /
 # Build jetson-inference and download models
 RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/jetson-inference.git && \
 	cd jetson-inference && \
@@ -99,9 +101,9 @@ RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/j
 
 
 # Copy scripts.
-COPY scripts/ /usr/local/bin/
+#COPY scripts/ /usr/local/bin/
 
-COPY entrypoint.sh /
+#COPY entrypoint.sh /
 WORKDIR /home/runner
 USER runner
 ENTRYPOINT ["/entrypoint.sh"]
