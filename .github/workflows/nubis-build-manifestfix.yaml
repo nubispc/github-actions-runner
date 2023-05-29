@@ -228,7 +228,14 @@ jobs:
           docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
-        
+    
+    - name: Configure cosign with private key
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: |
+        echo "${{ secrets.PRIVATE_KEY }}" > private-key.pem
+        echo "${{ secrets.CERTIFICATE }}" > certificate.pem
+        cosign generate-key-pair -k private-key.pem -c certificate.pem
+
     - name: Sign the published Docker image
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       env:
