@@ -87,6 +87,16 @@ jobs:
       uses: sigstore/cosign-installer@ca922a571676e06d3299cce5d520e178ba89a276
       with:
         cosign-release: 'v1.13.1'
+
+    - name: Sign the published Docker image
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      env:
+       COSIGN_EXPERIMENTAL: "true"
+      run: |
+        echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign \
+          -key "${{ secrets.COSIGN_PRIVATE_KEY }}" \
+          -cert "${{ secrets.COSIGN_CERTIFICATE }}" \
+          {}@${{ steps.build-and-push.outputs.digest }}
     - name: Check install!
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: cosign version
