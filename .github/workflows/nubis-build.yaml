@@ -142,7 +142,7 @@ jobs:
         run: |
           echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign \
             -key "${{ secrets.COSIGN_PRIVATE_KEY }}" \
-            -cert "${{ secrets.COSIGN_CERTIFICATE }}" \
+            -cert "${{ secrets.COSIGN_PUBLIC_KEY }}" \
             {}@${{ steps.build-and-push.outputs.digest }}
 
       - name: Clean up Docker Context for Buildx
