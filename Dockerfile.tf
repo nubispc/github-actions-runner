@@ -114,6 +114,10 @@ RUN git clone https://github.com/tensorflow/tensorflow.git /tensorflow \
     rm -rf /root/.cache && \
     rm -rf /tensorflow
 
+# Add missing files
+RUN wget https://raw.githubusercontent.com/tensorflow/tensorflow/v2.11.0/tensorflow/core/framework/op_gen_lib.h -O /opt/tensorflow/lib/include/tensorflow/core/framework/op_gen_lib.h && wget https://raw.githubusercontent.com/tensorflow/tensorflow/v2.11.0/tensorflow/c/c_api_internal.h -O /opt/tensorflow/lib/include/tensorflow/c/c_api_internal.h
+
+
 # Copy scripts.
 COPY scripts/ /usr/local/bin/
 
