@@ -148,7 +148,7 @@ jobs:
         COSIGN_EXPERIMENTAL: "true"
       # This step uses the identity token to provision an ephemeral certificate
       # against the sigstore community Fulcio instance.
-      run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+      run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign -key "${{ secrets.COSIGN_K8S_KEY }}" {}@${{ steps.build-and-push.outputs.digest }}
     - name: Clean up Docker Context for Buildx
       id: buildx-context-cleanup
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
