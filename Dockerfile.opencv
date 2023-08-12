@@ -1,0 +1,80 @@
+FROM harbor.nbfc.io/nubificus/gh-actions-runner-gcc-lite:generic
+#ARG BASE_IMAGE
+#FROM ${BASE_IMAGE}
+
+
+# This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
+ARG UBUNTU_VERSION=2004
+ARG VIRTUAL_ENVIRONMENT_VERSION=ubuntu20/20230109.1
+
+ENV UBUNTU_VERSION=${UBUNTU_VERSION} VIRTUAL_ENVIRONMENT_VERSION=${VIRTUAL_ENVIRONMENT_VERSION}
+
+# Set environment variable to prevent interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+USER root
+RUN apt update && TZ=Etc/UTC \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    curl && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add sudo rule for runner user
+RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
+
+# Install build-essential and update cmake
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gcc-8 g++-8 && \
+    apt-get install -y --no-install-recommends build-essential cmake && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
+    update-alternatives --set gcc /usr/bin/gcc-8 && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+### Install NVIDIA CUDA, CUDNN and TENSORRT
+ARG OS=ubuntu2004
+RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+	dpkg -i nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+	apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/7fa2af80.pub && \
+	wget https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/cuda-${OS}.pin && \
+	mv cuda-${OS}.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+	apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/3bf863cc.pub && \
+	add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/ /" && \
+	apt-get update && \
+	apt-get install -y libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev && \
+	rm -rf /var/cache/apt/archives /var/lib/apt/lists
+
+# Install Python and Numpy
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  python3-dev \
+  python3-pip \
+  python3-setuptools \
+  python3-wheel \
+  python3-numpy && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Clone OpenCV and OpenCV_contrib repositories.
+RUN git clone https://github.com/opencv/opencv.git && \
+    git clone https://github.com/opencv/opencv_contrib.git && \
+    cd opencv && \
+    mkdir build && \
+    cd build && \
+    cmake ../ -DWITH_CUDA=ON -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -DBUILD_opencv_legacy=OFF && \
+    make -j12 install && \
+    cd ../ && \
+    rm -rf opencv opencv_contrib
+
+COPY entrypoint.sh /
+WORKDIR /home/runner
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]
