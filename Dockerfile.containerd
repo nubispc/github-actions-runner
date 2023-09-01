@@ -1,0 +1,57 @@
+#FROM harbor.nbfc.io/nubificus/gh-actions-runner:multi_base_x86_64
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+
+# This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
+ARG UBUNTU_VERSION=2004
+ARG VIRTUAL_ENVIRONMENT_VERSION=ubuntu20/20230109.1
+
+ENV UBUNTU_VERSION=${UBUNTU_VERSION} VIRTUAL_ENVIRONMENT_VERSION=${VIRTUAL_ENVIRONMENT_VERSION}
+
+# Set environment variable to prevent interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Install base packages.
+USER root
+RUN apt update && TZ=Etc/UTC \
+    apt-get install -y --no-install-recommends \
+    curl && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add sudo rule for runner user
+RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
+
+# Install containerd
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends containerd wget && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install ctr command-line tool
+RUN mkdir -p /opt/containerd/bin && \
+    curl -L https://github.com/containerd/containerd/releases/latest/download/ctr-linux-amd64 -o /opt/containerd/bin/ctr && \
+    chmod +x /opt/containerd/bin/ctr
+
+# Configure containerd
+# COPY containerd-config.toml /etc/containerd/config.toml
+# If you're only looking to use the ctr tool within your Docker image to manage images and don't intend to run containers using containerd as the runtime, you don't need to provide a full containerd-config.toml configuration. 
+
+# Copy scripts.
+COPY scripts/ /usr/local/bin/
+
+COPY entrypoint.sh /
+WORKDIR /home/runner
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]
+
+## After building and running your Docker image, you can use the ctr tool as follows:
+
+# Import an image using ctr
+#/opt/containerd/bin/ctr image import <image_path>
+
+# List images using ctr
+#/opt/containerd/bin/ctr image ls

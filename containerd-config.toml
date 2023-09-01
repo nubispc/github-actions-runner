@@ -1,0 +1,17 @@
+version = 2
+oom_score = 0
+
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri"]
+    stream_server_address = "127.0.0.1"
+    stream_server_port = "0"
+    sandbox_image = "k8s.gcr.io/pause:3.5"
+    stats_collect_period = "10s"
+    enable_selinux = false
+    disable_apparmor = true
+    enable_proc_injection = true
+    restrict_oom_score_adj = true
+
+  [plugins."io.containerd.runtime.v1.linux"]
+    shim = "containerd-shim"
+    runtime = "runc"
