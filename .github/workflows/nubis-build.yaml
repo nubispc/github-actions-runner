@@ -26,10 +26,10 @@ jobs:
         run: |
           if [ ${{ github.ref }} != 'refs/heads/main' ]; then
             echo "will NOT build dockerfiles"
-            #echo "::set-output name=enable::false"
+            echo "::set-output name=enable::false"
           else
             echo "WILL build dockerfiles"
-            #echo "::set-output name=enable::true"
+            echo "::set-output name=enable::true"
           fi
           # Enable build
           echo "::set-output name=enable::true"
