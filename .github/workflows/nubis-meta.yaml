@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - feat_aarch32
+      - testing-flow
   workflow_dispatch:
 
 env:
