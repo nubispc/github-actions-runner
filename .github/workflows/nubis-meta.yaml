@@ -69,9 +69,9 @@ jobs:
           matrix=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
           echo $matrix
-          build_level0_matrix=$(jq -e .dockerfile_build_components[] | jq 'walk(if type == "object" and .build_level == 1 then del(.) else . end)'  ${{ inputs.manifest_file }} | tr -d '[:space:]' |  sed 's/null,//g')
+          build_level0_matrix=$(jq -e .dockerfile_build_components[] | jq 'walk(if type == "object" and .build_level == 1 then del(.) else . end)' ${{github.workspace}}/${{env.manifest_file}}  | tr -d '[:space:]' |  sed 's/null,//g')
           echo "build_level0_matrix=$build_level0_matrix" >> $GITHUB_OUTPUT
-          build_level1_matrix=$(jq -e .dockerfile_build_components[] | jq 'walk(if type == "object" and .build_level == 0 then del(.) else . end)'  ${{ inputs.manifest_file }} | tr -d '[:space:]' |  sed 's/null,//g')
+          build_level1_matrix=$(jq -e .dockerfile_build_components[] | jq 'walk(if type == "object" and .build_level == 0 then del(.) else . end)' ${{github.workspace}}/${{env.manifest_file}}  | tr -d '[:space:]' |  sed 's/null,//g')
           echo "build_level1_matrix=$build_level1_matrix" >> $GITHUB_OUTPUT
           echo "build0:"
           echo $build_level0_matrix
