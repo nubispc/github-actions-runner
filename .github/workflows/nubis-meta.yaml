@@ -26,6 +26,7 @@ jobs:
         files: ${{ steps.set-matrix.outputs.files}}
         arch: ${{ steps.set-matrix.outputs.arch}}
         registry: ${{ steps.dockerfiles.outputs.registry }}
+        manifest_matrix: ${{ steps.parse-manifest.outputs.matrix }}
 
       steps:
       - name: Checkout
@@ -62,7 +63,6 @@ jobs:
           # Set output
           echo "::set-output name=matrix::$( echo "$JSON" )"
 
-
       - name: parse manifest
         id: parse-manifest
         run: |
@@ -70,9 +70,6 @@ jobs:
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
           echo fromJson(toJSON(fromJson(steps.parse-manifest.outputs.matrix)))
 
-      outputs:
-        matrix: ${{ steps.parse-manifest.outputs.matrix }}
-    
   # build:
   #   needs: [prepare]
   #   uses: ./.github/workflows/nubis-build.yaml
