@@ -13,6 +13,7 @@ env:
     IMAGE_NAME: gh-actions-runner-gcc-lite
     # IMAGE_NAME: ${{ github.repository }}
     #IMAGE_NAME: ananos/${{ github.repository }}
+    manifest_file: dockerImages_build_manifest.json
 
 jobs:
   prepare:
@@ -60,19 +61,30 @@ jobs:
           echo $JSON
           # Set output
           echo "::set-output name=matrix::$( echo "$JSON" )"
+
+
+      - name: parse manifest
+        id: parse-manifest
+        run: |
+          matrix=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]')
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo fromJson(toJSON(fromJson(steps.parse-manifest.outputs.matrix)))
+
+      outputs:
+        matrix: ${{ steps.parse-manifest.outputs.matrix }}
     
-  build:
-    needs: [prepare]
-    uses: ./.github/workflows/nubis-build.yaml
-    secrets: inherit
-    strategy:
-      matrix:
-        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile)) }}
-      fail-fast: false
-    with:
-      matrix: ${{ needs.prepare.outputs.matrix }}
-      #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
-      dockerfile: ${{ matrix.dockerfiles }}
-      registry: ${{ needs.prepare.outputs.registry }}
+  # build:
+  #   needs: [prepare]
+  #   uses: ./.github/workflows/nubis-build.yaml
+  #   secrets: inherit
+  #   strategy:
+  #     matrix:
+  #       dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile)) }}
+  #     fail-fast: false
+  #   with:
+  #     matrix: ${{ needs.prepare.outputs.matrix }}
+  #     #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
+  #     dockerfile: ${{ matrix.dockerfiles }}
+  #     registry: ${{ needs.prepare.outputs.registry }}
 
 
