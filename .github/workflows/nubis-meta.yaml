@@ -68,7 +68,7 @@ jobs:
         run: |
           matrix=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]')
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
-          echo ${{ fromJson(toJSON(fromJson(steps.parse-manifest.outputs.matrix))) }}
+          echo ${{ steps.parse-manifest.outputs.matrix }}
 
   # build:
   #   needs: [prepare]
