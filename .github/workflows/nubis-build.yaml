@@ -68,12 +68,13 @@ jobs:
           flag_value="false"
           
         fi
+        echo $flag_value
         echo "check=$flag_value" >> $GITHUB_OUTPUT
 
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
-    if: ${{ needs.controller.outputs.arch_flag }} == 'true' 
+    if: ${{ needs.controller.outputs.arch_flag == 'true' }}  
     permissions:
       contents: read
       packages: write
