@@ -63,11 +63,11 @@ jobs:
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
         if [ -z "$check_arch" ]; 
         then
-          echo "flag_value='gkoletsos'" >> $GITHUB_OUTPUT
+          value="initialized"
         else
-          echo "flag_value='fakotaki'" >> $GITHUB_OUTPUT
+          value="exists"
         fi
-
+        echo "flag_value=$value" >> $GITHUB_OUTPUT
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
