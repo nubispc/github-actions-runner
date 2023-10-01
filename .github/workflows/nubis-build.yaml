@@ -60,6 +60,7 @@ jobs:
       run: |
         check=`echo ${{ needs.setup.outputs.docker_prescribed_arch}} | jq '.[] | select(test("${{matrix.architecture}}")) | jq length`
         if [! -z "$check" ];
+        then
           echo "$check"
         fi
 
