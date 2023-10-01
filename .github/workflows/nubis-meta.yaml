@@ -85,17 +85,16 @@ jobs:
   build-base:
     needs: [prepare]
     runs-on: ["gcc","lite"]
-    # uses: ./.github/workflows/nubis-build.yaml
-    # secrets: inherit
+    uses: ./.github/workflows/nubis-build.yaml
+    secrets: inherit
     strategy:
       matrix:
         dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level0).dockerfile_build_components)) }}
       fail-fast: false
-    # with:
-    #   matrix: ${{ needs.prepare.outputs.matrix }}
-    #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
-    #   dockerfile: ${{ matrix.dockerfiles }}
-    #   registry: ${{ needs.prepare.outputs.registry }}
+    with:
+      matrix: ${{ needs.prepare.outputs.matrix }}
+      dockerfile: ${{ matrix.dockerfiles }}
+      registry: ${{ needs.prepare.outputs.registry }}
     steps:
     - name: test base build
       run: |
