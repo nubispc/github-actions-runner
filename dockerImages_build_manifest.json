@@ -2,31 +2,31 @@
     "dockerfile_build_components":
     [
         {
-            "image_filaname": "Dockerfile.base",
+            "image_filename": "Dockerfile.base",
             "build_level": 0
         },
         {
-            "image_filaname": "Dockerfile.gcc-lite",
+            "image_filename": "Dockerfile.gcc-lite",
             "build_level": 1
         },
         {
-            "image_filaname": "Dockerfile.go",
+            "image_filename": "Dockerfile.go",
             "build_level": 1
         },
         {
-            "image_filaname": "Dockerfile.jetson",
+            "image_filename": "Dockerfile.jetson",
             "build_level": 1
         },
         {
-            "image_filaname": "Dockerfile.rust",
+            "image_filename": "Dockerfile.rust",
             "build_level": 1
         },
         {
-            "image_filaname": "Dockerfile.tf",
+            "image_filename": "Dockerfile.tf",
             "build_level": 1
         },
         {
-            "image_filaname": "Dockerfile.torch",
+            "image_filename": "Dockerfile.torch",
             "build_level": 1
         }
     ]
