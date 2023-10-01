@@ -84,8 +84,9 @@ jobs:
 
   build-base:
     needs: [prepare]
+    runs-on: ["gcc","lite"]
     # uses: ./.github/workflows/nubis-build.yaml
-    secrets: inherit
+    # secrets: inherit
     strategy:
       matrix:
         dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrbuild_level0ix).dockerfile)) }}
@@ -103,8 +104,9 @@ jobs:
 
   build:
     needs: [prepare, build-base]
+    runs-on: ["gcc","lite"] 
     # uses: ./.github/workflows/nubis-build.yaml
-    secrets: inherit
+    # secrets: inherit
     strategy:
       matrix:
         dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level1).dockerfile)) }}
