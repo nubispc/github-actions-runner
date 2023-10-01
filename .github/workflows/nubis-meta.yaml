@@ -100,7 +100,7 @@ jobs:
     - name: test base build
       run: |
         # echo ${{ matrix.dockerfiles}}
-        echo ${{ fromJson(needs.prepare.outputs.build_level0) }}
+        echo ${{ toJSON(fromJson(needs.prepare.outputs.build_level0)) }}
 
 
   build:
@@ -121,4 +121,4 @@ jobs:
     - name: test base build
       run: |
         # echo ${{ matrix.dockerfiles}}
-        echo ${{ fromJson(needs.prepare.outputs.build_level1) }}
+        echo ${{ toJson(fromJson(needs.prepare.outputs.build_level1)) }}
