@@ -47,28 +47,28 @@ jobs:
           echo $docker_prescribed_arch
 
 
-  controller:
-    runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
-    strategy:
-      matrix: 
-        architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
-      fail-fast: false
-    needs: [setup]
+  # controller:
+  #   runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+  #   strategy:
+  #     matrix: 
+  #       architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
+  #     fail-fast: false
+  #   needs: [setup]
     
-    steps:
-    - name: check
-      id: check-arch
-      run: |
-        check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
-        if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
-            echo "flag set to true"
-            echo "flag=true" >> $GITHUB_OUTPUT;
-        else           
-            echo "flag set to false"
-            echo "flag=false" >> $GITHUB_OUTPUT;
-        fi
-    outputs:
-      arch_flag: ${{ steps.check-arch.outputs.flag }}    
+  #   steps:
+  #   - name: check
+  #     id: check-arch
+  #     run: |
+  #       check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
+  #       if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
+  #           echo "flag set to true"
+  #           echo "flag=true" >> $GITHUB_OUTPUT;
+  #       else           
+  #           echo "flag set to false"
+  #           echo "flag=false" >> $GITHUB_OUTPUT;
+  #       fi
+  #   outputs:
+  #     arch_flag: ${{ steps.check-arch.outputs.flag }}    
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
@@ -78,7 +78,7 @@ jobs:
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
-
+    if: contains(${{ needs.setup.outputs.docker_prescribed_arch}}, ${{matrix.architecture}})
     strategy:
       matrix: 
         architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
