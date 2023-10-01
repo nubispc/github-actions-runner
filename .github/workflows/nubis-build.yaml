@@ -95,7 +95,7 @@ jobs:
       run: |
           echo ${{needs.setup.outputs.docker_prescribed_arch}}
           echo  ${{ matrix.architecture }}
-          echo ${{ needs.controller.outputs.arch_flag }}
+          echo contains(${{needs.setup.outputs.docker_prescribed_arch}}, ${{ matrix.architecture }})
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
 
