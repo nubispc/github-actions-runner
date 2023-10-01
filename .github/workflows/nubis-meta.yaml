@@ -84,16 +84,16 @@ jobs:
 
   build-base:
     needs: [prepare]
-    runs-on: ["gcc","lite"]
-    uses: ./.github/workflows/nubis-build.yaml
     strategy:
       matrix:
         dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level0).dockerfile_build_components)) }}
       fail-fast: false
+    uses: ./.github/workflows/nubis-build.yaml
     with:
       matrix: ${{ needs.prepare.outputs.matrix }}
       dockerfile: ${{ matrix.dockerfiles }}
       registry: ${{ needs.prepare.outputs.registry }}
+    secrets: inherit
 
 
   # build:
