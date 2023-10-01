@@ -63,12 +63,10 @@ jobs:
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
         if [[ ! -z "$check_arch" ]];
         then
-          flag_value=1
-          echo $flag_value
-          echo "flag_value=1" >> $GITHUB_OUTPUT
+          echo "flag_value="1"" >> $GITHUB_OUTPUT
         else
           echo $flag_value
-          echo "flag_value=0" >> $GITHUB_OUTPUT
+          echo "flag_value="0"" >> $GITHUB_OUTPUT
         fi
 
 
