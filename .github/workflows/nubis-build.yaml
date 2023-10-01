@@ -91,11 +91,11 @@ jobs:
       image_name: ${{ steps.build.outputs.image_name }}
 
     needs: [setup, controller] 
-    if: ${{needs.controller.outputs.arch_flag == 'true'}}
     
     steps:
     - name: Build
       id: build
+      if: ${{needs.controller.outputs.arch_flag == 'true'}}
       run: |
           echo ${{needs.controller.outputs.arch_flag}}
           echo ${{ matrix.architecture }}
@@ -104,6 +104,7 @@ jobs:
 
     - name: Fix filename
       id: fix-filename
+      if: ${{needs.controller.outputs.arch_flag == 'true'}}
       run: |
          ARCH=$( echo "${{ matrix.architecture }}" )
          FILENAME=$( echo "${{ inputs.dockerfile }}" )   
@@ -117,13 +118,15 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
+      if: ${{needs.controller.outputs.arch_flag == 'true'}}
     - name: Install cosign
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      if: ${{needs.controller.outputs.arch_flag == 'true'}}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true' }}
       uses: sigstore/cosign-installer@ca922a571676e06d3299cce5d520e178ba89a276
       with:
         cosign-release: 'v1.13.1'
     - name: Check install!
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true'}}
       run: cosign version
     - name: Set up Docker Context for Buildx
       id: buildx-context
@@ -131,7 +134,7 @@ jobs:
           docker context create builders || true
     # Workaround: https://github.com/docker/build-push-action/issues/461
     - name: Setup Docker buildx
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true'}}
       uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
       with:
         version: latest
@@ -139,7 +142,7 @@ jobs:
     # Login against a Docker registry except on PR
     # https://github.com/docker/login-action
     - name: Log into registry ${{ inputs.REGISTRY }}
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true'}}
       uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
       with:
         registry: ${{ inputs.REGISTRY }}
@@ -150,6 +153,7 @@ jobs:
     # https://github.com/docker/metadata-action
     - name: Extract Docker metadata
       id: meta
+      if: ${{needs.controller.outputs.arch_flag == 'true'}}
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
         images: ${{ inputs.registry }}/${{ steps.build.outputs.image_name }}
@@ -159,7 +163,7 @@ jobs:
     # Build and push Docker image with Buildx (don't push on PR)
     # https://github.com/docker/build-push-action
     - name: Build and push ${{ steps.fix-filename.outputs.dockerfilename }}-${{ matrix.architecture }}
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true'}}
       id: build-and-push
       uses: docker/build-push-action@master
       with:
@@ -178,7 +182,7 @@ jobs:
     # transparency data even for private images, pass --force to cosign below.
     # https://github.com/sigstore/cosign
     - name: Sign the published Docker image
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true'}}
       env:
         COSIGN_EXPERIMENTAL: "true"
       # This step uses the identity token to provision an ephemeral certificate
@@ -193,6 +197,7 @@ jobs:
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
     needs: [setup, build]
+    
     
     permissions:
       contents: read
