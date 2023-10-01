@@ -120,7 +120,6 @@ jobs:
       uses: actions/checkout@v3
       if: ${{needs.controller.outputs.arch_flag == 'true'}}
     - name: Install cosign
-      if: ${{needs.controller.outputs.arch_flag == 'true'}}
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && needs.controller.outputs.arch_flag == 'true' }}
       uses: sigstore/cosign-installer@ca922a571676e06d3299cce5d520e178ba89a276
       with:
@@ -197,7 +196,7 @@ jobs:
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
     needs: [setup, build]
-    
+
     
     permissions:
       contents: read
