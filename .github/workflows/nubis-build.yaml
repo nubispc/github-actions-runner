@@ -19,6 +19,7 @@ jobs:
     runs-on: [ self-hosted, gcc, lite ]
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
+      docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
     steps:
       - uses: actions/checkout@v2
       - name: Set test variable
@@ -37,6 +38,14 @@ jobs:
       - name: Read exported variable
         run: |
           echo "OUTPUT: ${{ steps.set-variable.outputs.enable }}"
+      
+      - name: get supported dockerfile architecture
+        id: get-docker-arch
+        run: |
+          docker_prescribed_arch=`grep "ARG GK_TEST=" | sed 's/.*=//'`
+          echo "docker_prescribed_arch=$docker_prescribed_arch" >> $GITHUB_OUTPUT
+          echo $docker_prescribed_arch
+
 
 
   build:
