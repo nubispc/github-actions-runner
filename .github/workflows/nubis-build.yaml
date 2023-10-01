@@ -61,13 +61,15 @@ jobs:
       id: check-arch
       run: |
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
-        if [[ "$check_arch" -gt 0 ]]; 
+        if [[ -z $check_arch ]]; 
         then
           value="exists"
+          echo "flag_value=$value" >> $GITHUB_OUTPUT
         else           
           value="initialized"
+          echo "flag_value=$value" >> $GITHUB_OUTPUT
         fi
-        echo "flag_value=$value" >> $GITHUB_OUTPUT
+        
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
