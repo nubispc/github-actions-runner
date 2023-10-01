@@ -65,11 +65,10 @@ jobs:
         then
           flag_value=1
           echo $flag_value
-          echo "flag_value=$flag_value" >> $GITHUB_OUTPUT
+          echo "flag_value=1" >> $GITHUB_OUTPUT
         else
-          flag_value=0
           echo $flag_value
-          echo "flag_value=$flag_value" >> $GITHUB_OUTPUT
+          echo "flag_value=0" >> $GITHUB_OUTPUT
         fi
 
 
