@@ -91,7 +91,7 @@ jobs:
       image_name: ${{ steps.build.outputs.image_name }}
 
     needs: [setup, controller] 
-    if: ${{needs.controller.outputs.arch_flag == true}}
+    if: ${{needs.controller.outputs.arch_flag == 'true'}}
     
     steps:
     - name: Build
