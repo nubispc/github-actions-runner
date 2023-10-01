@@ -47,6 +47,23 @@ jobs:
           echo $docker_prescribed_arch
 
 
+  controller:
+    runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    strategy:
+      matrix: 
+        architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
+      fail-fast: false
+    needs: [setup]
+    steps:
+    - name: check
+      id: check
+      run: |
+        check=`echo ${{ needs.setup.outputs.docker_prescribed_arch}} | jq '.[] | select(test("${{matrix.architecture}}")) | jq length`
+        if [! -z "$check" ];
+          echo "$check"
+        fi
+
+
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
@@ -67,7 +84,7 @@ jobs:
     outputs:
       image_name: ${{ steps.build.outputs.image_name }}
 
-    needs: [setup]
+    needs: [setup, controller] 
     steps:
     - name: Build
       id: build
