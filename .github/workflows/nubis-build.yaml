@@ -54,8 +54,6 @@ jobs:
         architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
       fail-fast: false
     needs: [setup]
-    outputs: 
-      arch_flag: ${{steps.check-arch.outputs.flag_value}}
     steps:
     - name: check
       id: check-arch
@@ -63,10 +61,10 @@ jobs:
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
         if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
             echo "flag set to true"
-            echo "flag_value='true'" >> $GITHUB_OUTPUT
+            echo "flag=true" >> $GITHUB_ENV
         else           
             echo "flag set to false"
-            echo "flag_value='false'" >> $GITHUB_OUTPUT
+            echo "flag=false" >> $GITHUB_ENV
         fi
         
 
@@ -94,7 +92,7 @@ jobs:
     - name: Build
       id: build
       run: |
-          echo ${{ needs.controller.outputs.arch_flag }}
+          echo ${{ env.flag }}
           echo ${{ matrix.architecture }}
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
