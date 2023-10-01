@@ -94,7 +94,7 @@ jobs:
       id: build
       run: |
           echo ${{needs.setup.outputs.docker_prescribed_arch}}
-          echo  ${{ fromJson(inputs.matrix) }}
+          echo  ${{ toJSON(fromJson(inputs.matrix)) }}
           echo ${{ needs.controller.outputs.arch_flag }}
           echo ${{ matrix.architecture }}
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
