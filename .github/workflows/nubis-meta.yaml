@@ -27,6 +27,8 @@ jobs:
         arch: ${{ steps.set-matrix.outputs.arch}}
         registry: ${{ steps.dockerfiles.outputs.registry }}
         manifest_matrix: ${{ steps.parse-manifest.outputs.matrix }}
+        build_level0: ${{ steps.outputs.parse-manifest.build_level0_matrix}}
+        build_level1: ${{ steps.outputs.parse-manifest.build_level1_matrix}}
 
       steps:
       - name: Checkout
@@ -78,18 +80,37 @@ jobs:
           echo "build1:"
           echo $build_level1_matrix          
 
-  # build:
-  #   needs: [prepare]
-  #   uses: ./.github/workflows/nubis-build.yaml
-  #   secrets: inherit
-  #   strategy:
-  #     matrix:
-  #       dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile)) }}
-  #     fail-fast: false
-  #   with:
-  #     matrix: ${{ needs.prepare.outputs.matrix }}
-  #     #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
-  #     dockerfile: ${{ matrix.dockerfiles }}
-  #     registry: ${{ needs.prepare.outputs.registry }}
 
 
+  build-base:
+    needs: [prepare]
+    # uses: ./.github/workflows/nubis-build.yaml
+    secrets: inherit
+    strategy:
+      matrix:
+        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrbuild_level0ix).dockerfile)) }}
+      fail-fast: false
+    # with:
+    #   matrix: ${{ needs.prepare.outputs.matrix }}
+    #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
+    #   dockerfile: ${{ matrix.dockerfiles }}
+    #   registry: ${{ needs.prepare.outputs.registry }}
+    run: |
+      echo ${{ matrix.dockerfiles}}
+
+
+  build:
+    needs: [prepare, build-base]
+    # uses: ./.github/workflows/nubis-build.yaml
+    secrets: inherit
+    strategy:
+      matrix:
+        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level1).dockerfile)) }}
+      fail-fast: false
+    # with:
+    #   matrix: ${{ needs.prepare.outputs.matrix }}
+    #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
+    #   dockerfile: ${{ matrix.dockerfiles }}
+    #   registry: ${{ needs.prepare.outputs.registry }}
+    run: |
+      echo ${{ matrix.dockerfiles}}    
