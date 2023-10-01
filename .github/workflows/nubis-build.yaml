@@ -61,11 +61,9 @@ jobs:
       id: check-arch
       run: |
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
-        if [[ "$check_arch" == "${{matrix.architecture}}" ]]; then
-            echo "flag=true" >> $GITHUB_ENV
+        if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
             echo "flag set to true"
         else           
-            echo "flag=false" >> $GITHUB_ENV
             echo "flag set to false"
         fi
         
@@ -94,7 +92,6 @@ jobs:
     - name: Build
       id: build
       run: |
-          echo ${{env.flag}}
           echo ${{ matrix.architecture }}
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
