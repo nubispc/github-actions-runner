@@ -88,7 +88,7 @@ jobs:
     outputs:
       image_name: ${{ steps.build.outputs.image_name }}
 
-    needs: [setup, controller] 
+    needs: [setup] 
     
     steps:
     - name: Build
