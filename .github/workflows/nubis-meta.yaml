@@ -89,7 +89,7 @@ jobs:
     # secrets: inherit
     strategy:
       matrix:
-        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level0).image_filename)) }}
+        dockerfiles: ${{ fromJson(needs.prepare.outputs.build_level0 }}
       fail-fast: false
     # with:
     #   matrix: ${{ needs.prepare.outputs.matrix }}
@@ -102,21 +102,21 @@ jobs:
         echo ${{ matrix.dockerfiles }}
 
 
-  build:
-    needs: [prepare, build-base]
-    runs-on: ["gcc","lite"] 
-    # uses: ./.github/workflows/nubis-build.yaml
-    # secrets: inherit
-    strategy:
-      matrix:
-        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level1).image_filename)) }}
-      fail-fast: false
-    # with:
-    #   matrix: ${{ needs.prepare.outputs.matrix }}
-    #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
-    #   dockerfile: ${{ matrix.dockerfiles }}
-    #   registry: ${{ needs.prepare.outputs.registry }}
-    steps:
-    - name: test base build
-      run: |
-        echo ${{ matrix.dockerfiles }}
+  # build:
+  #   needs: [prepare, build-base]
+  #   runs-on: ["gcc","lite"] 
+  #   # uses: ./.github/workflows/nubis-build.yaml
+  #   # secrets: inherit
+  #   strategy:
+  #     matrix:
+  #       dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level1).image_filename)) }}
+  #     fail-fast: false
+  #   # with:
+  #   #   matrix: ${{ needs.prepare.outputs.matrix }}
+  #   #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
+  #   #   dockerfile: ${{ matrix.dockerfiles }}
+  #   #   registry: ${{ needs.prepare.outputs.registry }}
+  #   steps:
+  #   - name: test base build
+  #     run: |
+  #       echo ${{ matrix.dockerfiles }}
