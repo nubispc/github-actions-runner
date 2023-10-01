@@ -27,8 +27,8 @@ jobs:
         arch: ${{ steps.set-matrix.outputs.arch}}
         registry: ${{ steps.dockerfiles.outputs.registry }}
         manifest_matrix: ${{ steps.parse-manifest.outputs.matrix }}
-        build_level0: ${{ steps.outputs.parse-manifest.build_level0_matrix}}
-        build_level1: ${{ steps.outputs.parse-manifest.build_level1_matrix}}
+        build_level0: ${{ steps.parse-manifest.outputs.build_level0_matrix}}
+        build_level1: ${{ steps.parse-manifest.outputs.build_level1_matrix}}
 
       steps:
       - name: Checkout
@@ -99,7 +99,7 @@ jobs:
     steps:
     - name: test base build
       run: |
-        echo ${{ matrix.dockerfiles}}
+        # echo ${{ matrix.dockerfiles}}
         ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level0).image_filename)) }}
 
 
@@ -120,5 +120,5 @@ jobs:
     steps:
     - name: test base build
       run: |
-        echo ${{ matrix.dockerfiles}}
+        # echo ${{ matrix.dockerfiles}}
         echo ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level1).image_filename)) }}
