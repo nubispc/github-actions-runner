@@ -89,7 +89,7 @@ jobs:
     # secrets: inherit
     strategy:
       matrix:
-        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.matrbuild_level0).image_filename)) }}
+        dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level0).image_filename)) }}
       fail-fast: false
     # with:
     #   matrix: ${{ needs.prepare.outputs.matrix }}
