@@ -63,9 +63,9 @@ jobs:
         check=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
         if [[ ! -z "$check" ]];
         then
-          flag_value="true"
+          flag_value='true'
         else 
-          flag_value="false"
+          flag_value='false'
           
         fi
         echo $flag_value
@@ -74,7 +74,6 @@ jobs:
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
-    if: ${{needs.controller.outputs.arch_flag}} 
     permissions:
       contents: read
       packages: write
