@@ -93,7 +93,6 @@ jobs:
     steps:
     - name: Build
       id: build
-      if: env.flag
       run: |
           echo ${{ needs.controller.outputs.arch_flag }}
           echo ${{ matrix.architecture }}
