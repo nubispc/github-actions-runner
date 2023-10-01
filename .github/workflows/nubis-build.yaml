@@ -60,7 +60,7 @@ jobs:
     - name: check
       id: check-arch
       run: |
-        check-arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
+        check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
         if [[ ! -z "$check-arch" ]];
         then
           flag_value='true'
