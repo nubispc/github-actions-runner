@@ -95,8 +95,10 @@ jobs:
     #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
     #   dockerfile: ${{ matrix.dockerfiles }}
     #   registry: ${{ needs.prepare.outputs.registry }}
-    run: |
-      echo ${{ matrix.dockerfiles}}
+    steps:
+    - name: test base build
+      run: |
+        echo ${{ matrix.dockerfiles}}
 
 
   build:
@@ -112,5 +114,7 @@ jobs:
     #   #dockerfile: ${{ toJSON(fromJson(needs.prepare.outputs.matrix).dockerfile) }}
     #   dockerfile: ${{ matrix.dockerfiles }}
     #   registry: ${{ needs.prepare.outputs.registry }}
-    run: |
-      echo ${{ matrix.dockerfiles}}    
+    steps:
+    - name: test base build
+      run: |
+        echo ${{ matrix.dockerfiles}}
