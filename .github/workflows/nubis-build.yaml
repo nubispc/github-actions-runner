@@ -55,10 +55,10 @@ jobs:
       fail-fast: false
     needs: [setup]
     outputs: 
-      arch_flag: ${{ steps.check.outputs.check }}
+      arch_flag: ${{ steps.check-arch.outputs.check }}
     steps:
     - name: check
-      id: check
+      id: check-arch
       run: |
         check=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
         if [[ ! -z "$check" ]];
