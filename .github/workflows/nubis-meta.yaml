@@ -99,7 +99,6 @@ jobs:
     steps:
     - name: test base build
       run: |
-        # echo ${{ matrix.dockerfiles}}
         echo ${{ toJSON(fromJson(needs.prepare.outputs.build_level0)) }}
 
 
@@ -120,5 +119,4 @@ jobs:
     steps:
     - name: test base build
       run: |
-        # echo ${{ matrix.dockerfiles}}
         echo ${{ toJson(fromJson(needs.prepare.outputs.build_level1)) }}
