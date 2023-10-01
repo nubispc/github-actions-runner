@@ -64,7 +64,7 @@ jobs:
         if [[ -z "$check_arch" ]]; 
         then
           value="initialized"
-        elif if [[ "$check_arch" ge 0 ]]; 
+        elif if [[ "$check_arch" -gt 0 ]]; 
           value="exists"
         fi
         echo "flag_value=$value" >> $GITHUB_OUTPUT
