@@ -61,10 +61,10 @@ jobs:
       id: check-arch
       run: |
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
-        if [ -z "$check_arch" ]; 
+        if [[ -z "$check_arch" ]]; 
         then
           value="initialized"
-        else
+        elif if [[ "$check_arch" ge 0 ]]; 
           value="exists"
         fi
         echo "flag_value=$value" >> $GITHUB_OUTPUT
