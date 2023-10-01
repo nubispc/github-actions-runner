@@ -95,10 +95,10 @@ jobs:
       matrix: ${{ needs.prepare.outputs.matrix }}
       dockerfile: ${{ matrix.dockerfiles }}
       registry: ${{ needs.prepare.outputs.registry }}
-    steps:
-    - name: test base build
-      run: |
-        echo ${{ matrix.dockerfiles }}
+    # steps:
+    # - name: test base build
+    #   run: |
+    #     echo ${{ matrix.dockerfiles }}
 
 
   build:
