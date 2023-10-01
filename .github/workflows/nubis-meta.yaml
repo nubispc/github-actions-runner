@@ -91,7 +91,7 @@ jobs:
     uses: ./.github/workflows/nubis-build.yaml
     with:
       matrix: ${{ needs.prepare.outputs.matrix }}
-      dockerfile: ${{ matrix.dockerfiles }}
+      dockerfile: ${{ matrix.dockerfiles.image_filename }}
       registry: ${{ needs.prepare.outputs.registry }}
     secrets: inherit
 
