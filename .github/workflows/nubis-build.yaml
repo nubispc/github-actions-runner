@@ -63,16 +63,17 @@ jobs:
         check=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
         if [[ ! -z "$check" ]];
         then
-          echo "check='true'" >> $GITHUB_OUTPUT
+          flag_value="true"
         else 
-          echo "check='false'" >> $GITHUB_OUTPUT
+          flag_value="false"
+          
         fi
-
+        echo "check=$flag_value" >> $GITHUB_OUTPUT
 
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
-    if: ${{ needs.controller.outputs.arch_flag == 'true' }}
+    if: ${{ needs.controller.outputs.arch_flag }} == 'true' 
     permissions:
       contents: read
       packages: write
