@@ -42,7 +42,7 @@ jobs:
       - name: get supported dockerfile architecture
         id: get-docker-arch
         run: |
-          docker_prescribed_arch=`grep "ARG GK_TEST=" | sed 's/.*=//'`
+          docker_prescribed_arch=`grep "ARG GK_TEST=" ${{ inputs.dockerfile }}| sed 's/.*=//'`
           echo "docker_prescribed_arch=$docker_prescribed_arch" >> $GITHUB_OUTPUT
           echo $docker_prescribed_arch
 
