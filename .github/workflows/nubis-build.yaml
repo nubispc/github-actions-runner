@@ -55,21 +55,18 @@ jobs:
       fail-fast: false
     needs: [setup]
     outputs: 
-      arch_flag: ${{ steps.check-arch.outputs.check }}
+      arch_flag: ${{ steps.check-arch.outputs.flag_value }}
     steps:
     - name: check
       id: check-arch
       run: |
-        check=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
-        if [[ ! -z "$check" ]];
+        check-arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))' | jq length`
+        if [[ ! -z "$check-arch" ]];
         then
           flag_value='true'
-        else 
-          flag_value='false'
-          
+          echo $flag_value
+          echo "flag_value=$flag_value" >> $GITHUB_OUTPUT
         fi
-        echo $flag_value
-        echo "check=$flag_value" >> $GITHUB_OUTPUT
 
 
   build:
