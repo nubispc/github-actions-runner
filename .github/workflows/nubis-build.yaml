@@ -74,7 +74,6 @@ jobs:
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
-    if: ${{ needs.controller.outputs.arch_flag == 'true' }}  
     permissions:
       contents: read
       packages: write
@@ -96,6 +95,7 @@ jobs:
     - name: Build
       id: build
       run: |
+          echo ${{needs.controller.outputs.arch_flag}}
           echo ${{ matrix.architecture }}
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
