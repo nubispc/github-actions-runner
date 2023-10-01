@@ -55,7 +55,7 @@ jobs:
       fail-fast: false
     needs: [setup]
     outputs: 
-      arch_flag: steps.check-arch.outputs.flag_value
+      arch_flag: ${{steps.check-arch.outputs.flag_value}}
     steps:
     - name: check
       id: check-arch
