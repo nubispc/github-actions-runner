@@ -62,10 +62,10 @@ jobs:
         check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
         if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
             echo "flag set to true"
-            echo "flag=true" >> $GITHUB_OUTPUT
+            echo "flag=true" >> $GITHUB_OUTPUT;
         else           
             echo "flag set to false"
-            echo "flag=false" >> $GITHUB_OUTPUT
+            echo "flag=false" >> $GITHUB_OUTPUT;
         fi
     outputs:
       arch_flag: ${{ steps.check-arch.outputs.flag }}    
