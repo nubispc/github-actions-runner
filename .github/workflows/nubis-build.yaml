@@ -51,7 +51,7 @@ jobs:
       - name: get supported dockerfile architecture2
         id: get-docker-arch2
         run: |
-          docker_arch=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))' | jq -rc .architecture
+          docker_arch=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))' | jq -rc .architecture)
           echo $docker_arch
 
 
