@@ -4,6 +4,30 @@
         {
             "image_filename": "Dockerfile.base",
             "build_level": 0
+        },
+        {
+            "image_filename": "Dockerfile.gcc-lite",
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.go",
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.jetson",
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.rust",
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.tf",
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.torch",
+            "build_level": 1
         }
     ]
 }
