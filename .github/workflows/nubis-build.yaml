@@ -122,6 +122,7 @@ jobs:
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)}}
       run: cosign version
     - name: Set up Docker Context for Buildx
+      if: contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)
       id: buildx-context
       run: |
           docker context create builders || true
