@@ -13,6 +13,8 @@ on:
       registry:
         required: true
         type: string
+env:
+    manifest_file: dockerImages_build_manifest.json
 
 jobs:
   setup:
@@ -45,6 +47,13 @@ jobs:
           docker_prescribed_arch=`grep "ARG GK_TEST=" ${{ inputs.dockerfile }}| sed 's/.*=//'`
           echo "docker_prescribed_arch=$docker_prescribed_arch" >> $GITHUB_OUTPUT
           echo $docker_prescribed_arch
+
+      - name: get supported dockerfile architecture2
+        id: get-docker-arch2
+        run: |
+          docker_arch=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))' | jq -rc .architecture
+          echo $docker_arch
+
 
 
   # controller:
