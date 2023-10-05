@@ -55,8 +55,7 @@ jobs:
           docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))' | jq -rc .architecture)
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> GITHUB_OUTPUT
-          echo "==============="
-          echo  ${{inputs.matrix.architecture}}
+
 
 
 
@@ -94,7 +93,8 @@ jobs:
       id-token: write
     strategy:
       matrix: 
-        architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
+        # architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
+        architecture: ${{ fromJson(toJSON(fromJson(needs.setup.outputs.dockerimage_manifest_arch))) }}
         #${{ fromJson(inputs.matrix) }}
       fail-fast: false
     
