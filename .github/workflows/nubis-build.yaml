@@ -56,7 +56,7 @@ jobs:
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> GITHUB_OUTPUT
           echo "==============="
-          echo  fromJson(toJSON(fromJson(inputs.matrix).architecture))
+          echo  ${{inputs.matrix}}
 
 
 
