@@ -61,7 +61,7 @@ jobs:
 
 
   controller:
-    runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    runs-on: [ self-hosted, gcc, lite ]
     # strategy:
     #   matrix: 
     #     architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
@@ -83,10 +83,12 @@ jobs:
   #           echo "flag=false" >> $GITHUB_OUTPUT;
   #       fi
   #   outputs:
-  #     arch_flag: ${{ steps.check-arch.outputs.flag }}    
+  #     arch_flag: ${{ steps.check-arch.outputs.flag }} 
+  
+     
 
   build:
-    runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    runs-on: [ self-hosted, gcc, lite ]
     permissions:
       contents: read
       packages: write
