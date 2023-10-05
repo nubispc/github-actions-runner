@@ -45,19 +45,14 @@ jobs:
         run: |
           docker_prescribed_arch=`grep "ARG GK_TEST=" ${{ inputs.dockerfile }}| sed 's/.*=//'`
           echo "docker_prescribed_arch=$docker_prescribed_arch" >> $GITHUB_OUTPUT
-
-# echo $docker_prescribed_arch
-
-      - name: get supported dockerfile architecture2
-        id: get-arch2
-        run: |
           docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))' | jq -rc .architecture)
           echo $docker_arch_manifest
-          echo "docker_arch_manifest=$docker_arch_manifest" >> GITHUB_OUTPUT
+          echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
+
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
       docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
-      dockerimage_manifest_arch: ${{ steps.get-arch2.outputs.docker_arch_manifest }}
+      dockerimage_manifest_arch: ${{ steps.get-arch.outputs.docker_arch_manifest }}
 
 
 
