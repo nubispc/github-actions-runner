@@ -96,7 +96,7 @@ jobs:
     strategy:
       matrix: 
         # architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
-        architecture: ${{ fromJson(needs.setup.outputs.dockerimage_manifest_arch) }}
+        architecture: ${{ fromJson(toJSON(fromJson(needs.setup.outputs.dockerimage_manifest_arch))) }}
         #${{ fromJson(inputs.matrix) }}
       fail-fast: false
     
