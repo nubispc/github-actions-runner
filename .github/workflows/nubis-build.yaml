@@ -52,7 +52,7 @@ jobs:
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
       docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
-      dockerimage_manifest_arch: ${{ steps.get-arch.outputs.docker_arch_manifest }}
+      dockerimage_manifest_arch: ${{ steps.get-docker-arch.outputs.docker_arch_manifest }}
 
 
 
