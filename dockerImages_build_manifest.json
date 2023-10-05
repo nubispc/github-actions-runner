@@ -3,8 +3,38 @@
     [
         {
             "image_filename": "Dockerfile.base",
-            "architecture": ["x86_64"],
+            "architecture": ["x86_64", "aarch64", "armv7l"],
             "build_level": 0
+        },
+        {
+            "image_filename": "Dockerfile.gcc-lite",
+            "architecture": ["x86_64", "aarch64", "armv7l"],
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.go",
+            "architecture": ["x86_64", "aarch64", "armv7l"],
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.jetson",
+            "architecture": ["x86_64","armv7l"],
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.rust",
+            "architecture": ["x86_64", "aarch64", "armv7l"],
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.tf",
+            "architecture": ["x86_64","armv7l"],
+            "build_level": 1
+        },
+        {
+            "image_filename": "Dockerfile.torch",
+            "architecture": ["x86_64","armv7l"],
+            "build_level": 1
         }
     ]
 }
