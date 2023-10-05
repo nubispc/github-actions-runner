@@ -60,18 +60,20 @@ jobs:
 
 
 
-  # controller:
-  #   runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
-  #   strategy:
-  #     matrix: 
-  #       architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
-  #     fail-fast: false
-  #   needs: [setup]
+  controller:
+    runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    # strategy:
+    #   matrix: 
+    #     architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
+    #   fail-fast: false
+    needs: [setup]
     
-  #   steps:
-  #   - name: check
-  #     id: check-arch
-  #     run: |
+    steps:
+    - name: check
+      id: check-arch
+      run: |
+        echo ${{ needs.setup.outputs.dockerimage_manifest_arch }}
+
   #       check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
   #       if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
   #           echo "flag set to true"
