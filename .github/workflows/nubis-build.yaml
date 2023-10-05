@@ -58,19 +58,19 @@ jobs:
 
 
 
-  controller:
-    runs-on: [ self-hosted, gcc, lite ]
+  # controller:
+  #   runs-on: [ self-hosted, gcc, lite ]
     # strategy:
     #   matrix: 
     #     architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
     #   fail-fast: false
-    needs: [setup]
+    # needs: [setup]
     
-    steps:
-    - name: check
-      id: check-arch
-      run: |
-        echo ${{ needs.setup.outputs.dockerimage_manifest_arch }}
+    # steps:
+    # - name: check
+    #   id: check-arch
+    #   run: |
+    #     echo ${{ needs.setup.outputs.dockerimage_manifest_arch }}
 
   #       check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
   #       if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
@@ -95,9 +95,7 @@ jobs:
       id-token: write
     strategy:
       matrix: 
-        # architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
         architecture: ${{ fromJson(needs.setup.outputs.dockerimage_manifest_arch).architecture }}
-        #${{ fromJson(inputs.matrix) }}
       fail-fast: false
     
     outputs:
@@ -106,14 +104,12 @@ jobs:
     needs: [setup] 
     steps:
     - name: Build
-      if: contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)
       id: build
       run: |
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
 
     - name: Fix filename
-      if: contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)
       id: fix-filename
       run: |
          ARCH=$( echo "${{ matrix.architecture }}" )
@@ -127,15 +123,14 @@ jobs:
          fi
 
     - name: Checkout
-      if: contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)
       uses: actions/checkout@v3
     - name: Install cosign
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)}}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       uses: sigstore/cosign-installer@ca922a571676e06d3299cce5d520e178ba89a276
       with:
         cosign-release: 'v1.13.1'
     - name: Check install!
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)}}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: cosign version
     - name: Set up Docker Context for Buildx
       if: contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)
@@ -144,7 +139,7 @@ jobs:
           docker context create builders || true
     # Workaround: https://github.com/docker/build-push-action/issues/461
     - name: Setup Docker buildx
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture) }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
       with:
         version: latest
@@ -152,7 +147,7 @@ jobs:
     # Login against a Docker registry except on PR
     # https://github.com/docker/login-action
     - name: Log into registry ${{ inputs.REGISTRY }}
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture) }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
       with:
         registry: ${{ inputs.REGISTRY }}
@@ -163,7 +158,7 @@ jobs:
     # https://github.com/docker/metadata-action
     - name: Extract Docker metadata
       id: meta
-      if: ${{needs.controller.outputs.arch_flag == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)}}
+      if: ${{needs.controller.outputs.arch_flag == 'true' }}
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
         images: ${{ inputs.registry }}/${{ steps.build.outputs.image_name }}
@@ -173,7 +168,7 @@ jobs:
     # Build and push Docker image with Buildx (don't push on PR)
     # https://github.com/docker/build-push-action
     - name: Build and push ${{ steps.fix-filename.outputs.dockerfilename }}-${{ matrix.architecture }}
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture) }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       id: build-and-push
       uses: docker/build-push-action@master
       with:
@@ -192,7 +187,7 @@ jobs:
     # transparency data even for private images, pass --force to cosign below.
     # https://github.com/sigstore/cosign
     - name: Sign the published Docker image
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture) }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       env:
         COSIGN_EXPERIMENTAL: "true"
       # This step uses the identity token to provision an ephemeral certificate
@@ -200,7 +195,7 @@ jobs:
       run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
     - name: Clean up Docker Context for Buildx
       id: buildx-context-cleanup
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' && contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture) }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
           docker context remove builders || true
 
