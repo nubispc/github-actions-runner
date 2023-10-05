@@ -18,11 +18,9 @@ env:
 
 jobs:
   setup:
+    name: setup
     runs-on: [ self-hosted, gcc, lite ]
-    outputs:
-      enable: ${{ steps.set-variable.outputs.enable }}
-      docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
-      dockerimage_manifest_arch: ${{ steps.get-docker-arch2.outputs.docker_arch_manifest }}
+
     steps:
       - uses: actions/checkout@v2
       - name: Set test variable
@@ -55,6 +53,10 @@ jobs:
           docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))' | jq -rc .architecture)
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> GITHUB_OUTPUT
+    outputs:
+      enable: ${{ steps.set-variable.outputs.enable }}
+      docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
+      dockerimage_manifest_arch: ${{ steps.get-docker-arch2.outputs.docker_arch_manifest }}
 
 
 
