@@ -109,4 +109,5 @@ jobs:
       matrix: ${{ needs.prepare.outputs.matrix }}
       dockerfile: ${{ matrix.dockerfiles.image_filename }}
       registry: ${{ needs.prepare.outputs.registry }}
-
+    secrets:
+      nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}

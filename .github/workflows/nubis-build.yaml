@@ -212,7 +212,7 @@ jobs:
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}_${{ github.job }}", "value": "{ \"${{inputs.dockerfile}}\": \"${{matrix.architecture}}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_${{inputs.dockerfile}}_${{matrix.architecture}}", "value": "{ \"${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
