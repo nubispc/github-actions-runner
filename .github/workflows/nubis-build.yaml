@@ -217,7 +217,7 @@ jobs:
         --header 'Authorization: Bearer ${{ env.pat }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}", "value": "{ \"${{inputs.dockerfile}}\": \"${{matrix.architecture}}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_", "value": "{ \"${{inputs.dockerfile}}\": \"${{matrix.architecture}}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
