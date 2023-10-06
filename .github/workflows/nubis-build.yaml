@@ -208,7 +208,7 @@ jobs:
       run: |
           docker context remove builders || true
 
-    - nane: Store docker images details in var
+    - name: Store docker images details in var
       id: docker-images-details-variable
       run: |
         echo "variable for docker image & arch "
