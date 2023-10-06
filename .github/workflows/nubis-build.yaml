@@ -55,11 +55,10 @@ jobs:
           echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
 
 
-      - name: Store docker images details in var
+      - name: Create var to hold build result
         id: create-docker-images-details-variable
         run: |
-          echo "variable for docker image & arch "
-          variable_name=`cat ${{inputs.dockerfile}}_${{matrix.architecture}} | 
+          echo "variable for docker image & arch " 
           curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
           --header 'Accept: application/vnd.github+json' \
           --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
@@ -217,10 +216,9 @@ jobs:
           docker context remove builders || true
 
     - name: Store docker images details in var
-      id: docker-images-details-variable
+      id: update-docker-images-details-variable
       run: |
         echo "variable for docker image & arch "
-        variable_name=`cat ${{inputs.dockerfile}}_${{matrix.architecture}} | 
         curl --location --request PATCH 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
