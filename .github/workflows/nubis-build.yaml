@@ -13,14 +13,7 @@ on:
       registry:
         required: true
         type: string
-    secrets:
-      nbfc_priv_secret:
-          required: true
-      nbfc_s3_access:
-          required: true
-      nbfc_s3_secret:
-          required: true
-      
+
 env:
     manifest_file: dockerImages_build_manifest.json
     pat: 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
