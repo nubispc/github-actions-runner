@@ -54,6 +54,19 @@ jobs:
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
 
+
+      - name: Store docker images details in var
+        id: create-docker-images-details-variable
+        run: |
+          echo "variable for docker image & arch "
+          variable_name=`cat ${{inputs.dockerfile}}_${{matrix.architecture}} | 
+          curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
+          --header 'Accept: application/vnd.github+json' \
+          --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
+          --header 'X-GitHub-Api-Version: 2022-11-28' \
+          --header 'Content-Type: application/json' \
+          -d '{ "name": "_${{ github.run_id }}_images_build", "value": "{ \"\" }"}'        
+
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
       docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
@@ -207,12 +220,13 @@ jobs:
       id: docker-images-details-variable
       run: |
         echo "variable for docker image & arch "
-        curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
+        variable_name=`cat ${{inputs.dockerfile}}_${{matrix.architecture}} | 
+        curl --location --request PATCH 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}_${{inputs.dockerfile}}_${{matrix.architecture}}", "value": "{ \"${{ steps.build-and-push.conclusion }}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_images_build", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
