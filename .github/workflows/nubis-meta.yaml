@@ -96,19 +96,18 @@ jobs:
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
 
-
   build:
     needs: [prepare, build-base]
-    uses: ./.github/workflows/nubis-build.yaml
-    secrets: inherit
     strategy:
       matrix:
         dockerfiles: ${{ fromJson(toJSON(fromJson(needs.prepare.outputs.build_level1).dockerfile_build_components)) }}
       fail-fast: false
+    uses: ./.github/workflows/nubis-build.yaml
     with:
       matrix: ${{ needs.prepare.outputs.matrix }}
       dockerfile: ${{ matrix.dockerfiles.image_filename }}
       registry: ${{ needs.prepare.outputs.registry }}
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
-      
+
+
