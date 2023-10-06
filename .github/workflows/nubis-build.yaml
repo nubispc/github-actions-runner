@@ -13,8 +13,18 @@ on:
       registry:
         required: true
         type: string
+    secrets:
+      nbfc_priv_secret:
+          required: true
+      nbfc_s3_access:
+          required: true
+      nbfc_s3_secret:
+          required: true
+      
 env:
     manifest_file: dockerImages_build_manifest.json
+    pat: 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
+
 
 jobs:
   setup:
@@ -133,7 +143,6 @@ jobs:
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: cosign version
     - name: Set up Docker Context for Buildx
-      if: contains(needs.setup.outputs.docker_prescribed_arch,matrix.architecture)
       id: buildx-context
       run: |
           docker context create builders || true
@@ -198,6 +207,17 @@ jobs:
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
           docker context remove builders || true
+
+    - nane: Store docker images details in var
+      id: docker-images-details-variable
+      run: |
+        echo "variable for docker image & arch "
+        curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
+        --header 'Accept: application/vnd.github+json' \
+        --header 'Authorization: Bearer ${{ env.pat }}' \
+        --header 'X-GitHub-Api-Version: 2022-11-28' \
+        --header 'Content-Type: application/json' \
+        -d '{ "name": "_${{ github.run_id }}", "value": "{ \"${{inputs.dockerfile}}\": \"${{matrix.architecture}}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
