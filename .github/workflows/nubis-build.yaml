@@ -231,7 +231,7 @@ jobs:
       id: update-docker-images-details-variable
       run: |
         echo "variable for docker image & arch "
-        random_id=`echo $RANDOM`
+        random_id=$(echo $RANDOM)
         curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
