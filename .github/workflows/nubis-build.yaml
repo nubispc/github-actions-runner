@@ -225,7 +225,10 @@ jobs:
     #       --header 'X-GitHub-Api-Version: 2022-11-28' \
     #       --header 'Content-Type: application/json' \
     #     sleep 120
-
+    - name: random-number-generator
+      id: random-number-generator
+      run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Store docker images details in var
       id: update-docker-images-details-variable
@@ -235,7 +238,7 @@ jobs:
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}_${RANDOM}", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random-number }}", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
