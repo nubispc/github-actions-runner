@@ -215,16 +215,29 @@ jobs:
       run: |
           docker context remove builders || true
 
+    - name: list repo vars
+      id: list-repo-vars
+      run: |
+        echo "list repo vars"
+        curl --location 'https://api.github.com/repos/nubispc/github-actions-runner/actions/variables' \
+          --header 'Accept: application/vnd.github+json' \
+          --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
+          --header 'X-GitHub-Api-Version: 2022-11-28' \
+          --header 'Content-Type: application/json' \
+        sleep 120
+
+
     - name: Store docker images details in var
       id: update-docker-images-details-variable
       run: |
         echo "variable for docker image & arch "
+        random_id=`echo $RANDOM`
         curl --location --request PATCH 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}_images_build", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_$random_id", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
