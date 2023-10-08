@@ -232,7 +232,7 @@ jobs:
       run: |
         echo "variable for docker image & arch "
         echo "random_id=$(echo $RANDOM)" >> $GITHUB_OUTPUT
-
+        echo $random_id
         curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
