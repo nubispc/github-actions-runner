@@ -55,16 +55,16 @@ jobs:
           echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
 
 
-      - name: Create var to hold build result
-        id: create-docker-images-details-variable
-        run: |
-          echo "variable for docker image & arch " 
-          curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
-          --header 'Accept: application/vnd.github+json' \
-          --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
-          --header 'X-GitHub-Api-Version: 2022-11-28' \
-          --header 'Content-Type: application/json' \
-          -d '{ "name": "_${{ github.run_id }}_images_build", "value": "{ \"\" }"}'        
+      # - name: Create var to hold build result
+      #   id: create-docker-images-details-variable
+      #   run: |
+      #     echo "variable for docker image & arch " 
+      #     curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
+      #     --header 'Accept: application/vnd.github+json' \
+      #     --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
+      #     --header 'X-GitHub-Api-Version: 2022-11-28' \
+      #     --header 'Content-Type: application/json' \
+      #     -d '{ "name": "_${{ github.run_id }}_images_build", "value": "{ \"\" }"}'        
 
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
@@ -232,7 +232,7 @@ jobs:
       run: |
         echo "variable for docker image & arch "
         random_id=`echo $RANDOM`
-        curl --location --request PATCH 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
+        curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
