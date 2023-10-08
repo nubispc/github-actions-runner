@@ -230,15 +230,12 @@ jobs:
     - name: Store docker images details in var
       id: update-docker-images-details-variable
       run: |
-        echo "variable for docker image & arch "
-        echo "random_id=$(echo $RANDOM)" >> $GITHUB_OUTPUT
-        echo $random_id
         curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}_${{ steps.update-docker-images-details-variable.outputs.random_id }}", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_${RANDOM}", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
