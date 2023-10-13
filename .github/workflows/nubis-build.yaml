@@ -263,12 +263,12 @@ jobs:
     - name: query-build-variables
       id: query-build-variables
       run: |
-        job_run_vars = `curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
+         repo_vars= `curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
         --header 'Accept: application/vnd.github+json' \
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json'`
-        echo $job_run_vars | jq -e  '.variables[] |select(.name |test("_${{ github.run_id }}."))'
+        job_run_vars=`echo $repo_vars | jq -e  '.variables[] |select(.name |test("_${{ github.run_id }}."))'`
 
 
 
