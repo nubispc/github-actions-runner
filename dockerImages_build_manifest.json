@@ -3,12 +3,12 @@
     [
         {
             "image_filename": "Dockerfile.base",
-            "architecture": ["x86_64", "armv7l"],
+            "architecture": ["x86_64"],
             "build_level": 0
         },
         {
             "image_filename": "Dockerfile.gcc-lite",
-            "architecture": ["x86_64", "aarch64"],
+            "architecture": ["x86_64"],
             "build_level": 1
         }
     ]
