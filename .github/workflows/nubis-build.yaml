@@ -275,7 +275,7 @@ jobs:
         echo
         dockerImage_build=$(echo $build_values | jq -rce '{dockerImage_build: map(.[].value) }')
         echo "dockerImage_build: ================"
-        echo $build_dockerImage_buildvalues
+        echo $dockerImage_build
         echo        
 
 
