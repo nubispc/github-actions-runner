@@ -263,6 +263,7 @@ jobs:
     - name: query-build-variables
       id: query-build-variables
       run: |
+        sleep 120
         repo_vars=$(curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' --header 'Accept: application/vnd.github+json' --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' --header 'X-GitHub-Api-Version: 2022-11-28' --header 'Content-Type: application/json')
         job_run_vars_values=$(echo $repo_vars | jq -rce  '[.variables[] |  select(.name |test("_${{ github.run_id }}."))]')
         echo "repo variables: ============"
