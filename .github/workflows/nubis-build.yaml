@@ -265,9 +265,18 @@ jobs:
       run: |
         repo_vars=$(curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' --header 'Accept: application/vnd.github+json' --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' --header 'X-GitHub-Api-Version: 2022-11-28' --header 'Content-Type: application/json')
         job_run_vars_values=$(echo $repo_vars | jq -rce  '[.variables[] |  select(.name |test("_${{ github.run_id }}."))]')
+        echo "repo variables: ============"
         echo $job_run_vars_values
+        echo 
         build_values=$(echo $job_run_vars_values | jq '{images: map( select(.value | contains("${{ inputs.dockerimage }}") ))}')
+        echo "build_values: ================"
         echo $build_values
+        echo
+        dockerImage_build=$(echo $build_values | jq '{dockerImage_build: [map(.[].value)] }')
+        echo "dockerImage_build: ================"
+        echo $build_dockerImage_buildvalues
+        echo        
+
 
 
 
