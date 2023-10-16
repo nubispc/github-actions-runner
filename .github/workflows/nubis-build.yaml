@@ -273,7 +273,7 @@ jobs:
         echo "build_values: ================"
         echo $build_values
         echo
-        dockerImage_build=$(echo $build_values | jq -rce '{dockerImages: map(.[].value) }')
+        dockerImage_build=$(echo $build_values | jq -rce '{dockerImages: map( select(.[].value | contains("${{ inputs.dockerimage }}") )) }')
         echo "dockerImage_build: ================"
         echo $dockerImage_build
         echo    
