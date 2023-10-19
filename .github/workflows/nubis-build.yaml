@@ -311,7 +311,7 @@ jobs:
     - name: Create manifest for ${{ needs.build.outputs.image_name }}
       id: debug-echo
       run: |
-          c=0 ; for i in `echo ${{ steps.query-build-variables.outputs.dockerImage_arch }} | jq -rc .arch | jq -c '.[]'` ; do c=`expr $c + 1` ; echo  VAR_"$c"=$i; done
+          c=0 ; for i in `echo "${{ steps.query-build-variables.outputs.dockerImage_arch }}" | jq -rc .arch | jq -c '.[]'` ; do c=`expr $c + 1` ; echo  VAR_"$c"=$i; done
           echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
           echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
