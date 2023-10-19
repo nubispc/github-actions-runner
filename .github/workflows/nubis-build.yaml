@@ -267,11 +267,11 @@ jobs:
         echo "repo variables: ============"
         echo $job_run_vars_values
         echo 
-        build_values=$(echo $job_run_vars_values | sed 's/{ \\"//g' | sed 's/\\" }//g' | jq -rce '[.[] | select(.value| contains("${{ inputs.dockerfile }}")) ]')
+        build_values=$(echo $job_run_vars_values | jq -rce'[.[].value]' | sed 's/[\\]//g' | sed 's/"{/{/g' | sed 's/}"/}/g' | jq -rce '[ .[] | select(.image | contains("${{ inputs.dockerfile }}")) ]')
         echo "build_values: ================"
         echo $build_values
         echo
-        dockerImage_build=$(echo $build_values | jq -rce '{images: [.[].value]}')
+        dockerImage_build=$(echo $build_values | jq -rce '{arch: [.[].arch]}')
         echo "dockerImage_build: ================"
         echo $dockerImage_build
         echo    
