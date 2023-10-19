@@ -236,7 +236,7 @@ jobs:
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": ""${{inputs.dockerfile}}_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random_number }}", "value": "{ \"arch\":${{matrix.architecture}}, \"result\": ${{ steps.build-and-push.conclusion }}\" }"}'        
+        -d '{ "name": ""${{inputs.dockerfile}}_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random_number }}", "value": "{ \"arch\":\"${{matrix.architecture}}\", \"result\": \"${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
