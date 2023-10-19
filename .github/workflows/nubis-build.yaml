@@ -48,8 +48,6 @@ jobs:
       - name: get supported dockerfile architecture
         id: get-docker-arch
         run: |
-          docker_prescribed_arch=`grep "ARG GK_TEST=" ${{ inputs.dockerfile }}| sed 's/.*=//'`
-          echo "docker_prescribed_arch=$docker_prescribed_arch" >> $GITHUB_OUTPUT
           docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))')
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
@@ -238,7 +236,7 @@ jobs:
         --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
         --header 'X-GitHub-Api-Version: 2022-11-28' \
         --header 'Content-Type: application/json' \
-        -d '{ "name": "_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random_number }}", "value": "{ \"${{inputs.dockerfile}}_${{matrix.architecture}}_${{ steps.build-and-push.conclusion }}\" }"}'        
+        -d '{ "name": "_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random_number }}", "value": "{ \"${{inputs.dockerfile}}||${{matrix.architecture}}||${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
     runs-on: [ self-hosted, gcc, lite ]
