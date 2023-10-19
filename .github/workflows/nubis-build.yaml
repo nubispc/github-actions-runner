@@ -261,7 +261,7 @@ jobs:
     - name: query-build-variables
       id: query-build-variables
       run: |
-        sleep 30
+        sleep 5
         repo_vars=$(curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' --header 'Accept: application/vnd.github+json' --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' --header 'X-GitHub-Api-Version: 2022-11-28' --header 'Content-Type: application/json' --header 'per_page: 1000')
         job_run_vars_values=$(echo $repo_vars | jq -rce  '[.variables[] |  select(.name |test("_${{ github.run_id }}."))]')
         echo "repo variables: ============"
@@ -274,7 +274,7 @@ jobs:
         dockerImage_build=$(echo $build_values | jq -rce '{arch: [.[].arch]}')
         echo "dockerImage_build: ================"
         echo $dockerImage_build
-        echo    
+        echo "dockerImage_arch=$((dockerImage_build))" >> $GITHUB_OUTPUT 
 
 
 
@@ -311,9 +311,7 @@ jobs:
     - name: Create manifest for ${{ needs.build.outputs.image_name }}
       id: debug-echo
       run: |
-          VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
-          VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
-          VAR3=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[2]) }}-$SHA )
+          c=0 ; for i in `echo ${{ steps.query-build-variables.outputs.dockerImage_arch }} | jq -rc .arch | jq -c '.[]'` ; do c=`expr $c + 1` ; echo  VAR_"$c"=$i; done
           echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
           echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
