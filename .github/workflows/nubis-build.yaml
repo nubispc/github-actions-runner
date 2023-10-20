@@ -274,10 +274,10 @@ jobs:
         dockerImage_build=$(echo $build_values | jq -rce '[.[].arch]')
         echo "dockerImage_build: ================"
         echo $dockerImage_build
-        echo "dockerImage_arch=$dockerImage_build" >> $GITHUB_OUTPUT 
+        echo "dockerImage_arch=$dockerImage_build" >> "$GITHUB_OUTPUT" 
         echo "===================="
-        echo "dockerImage_length=$(echo $build_values | jq -rce '[.[].arch] |length' )
-        echo "dockerImage_length=$dockerImage_length" >> $GITHUB_OUTPUT
+        echo "dockerImage_length=$(echo $build_values | jq -rce '[.[].arch] |length')
+        echo "dockerImage_length=$dockerImage_length" >> "$GITHUB_OUTPUT"
         echo
         echo $dockerImage_length
 
