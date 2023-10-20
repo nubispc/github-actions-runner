@@ -316,7 +316,7 @@ jobs:
     - name: Create manifest for ${{ needs.build.outputs.image_name }}
       id: debug-echo
       run: |
-          for i in 1 .. ${{ steps.query-build-variables.outputs.dockerImage_build_length }} ; do echo $i; done
+          for i in { 1..${{ steps.query-build-variables.outputs.dockerImage_build_length }} }; do echo $i; done
           echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
           echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
               --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
