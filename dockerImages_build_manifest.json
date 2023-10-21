@@ -8,7 +8,7 @@
         },
         {
             "image_filename": "Dockerfile.gcc-lite",
-            "architecture": ["x86_64", "aarch64","aarch64"],
+            "architecture": ["x86_64", "aarch64","armv7l"],
             "build_level": 1
         }
     ]
