@@ -56,52 +56,12 @@ jobs:
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
 
-
-      # - name: Create var to hold build result
-      #   id: create-docker-images-details-variable
-      #   run: |
-      #     echo "variable for docker image & arch " 
-      #     curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables' \
-      #     --header 'Accept: application/vnd.github+json' \
-      #     --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
-      #     --header 'X-GitHub-Api-Version: 2022-11-28' \
-      #     --header 'Content-Type: application/json' \
-      #     -d '{ "name": "_${{ github.run_id }}_images_build", "value": "{ \"\" }"}'        
+    
 
     outputs:
       enable: ${{ steps.set-variable.outputs.enable }}
       docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
       dockerimage_manifest_arch: ${{ steps.get-docker-arch.outputs.docker_arch_manifest }}
-
-
-
-
-
-  # controller:
-  #   runs-on: [ self-hosted, gcc, lite ]
-    # strategy:
-    #   matrix: 
-    #     architecture: ${{ fromJson(toJSON(fromJson(inputs.matrix).architecture)) }}
-    #   fail-fast: false
-    # needs: [setup]
-    
-    # steps:
-    # - name: check
-    #   id: check-arch
-    #   run: |
-    #     echo ${{ needs.setup.outputs.dockerimage_manifest_arch }}
-
-  #       check_arch=`echo '${{ needs.setup.outputs.docker_prescribed_arch}}' | jq '.[] | select(test("${{matrix.architecture}}"))'`
-  #       if [[ "$check_arch" == '"${{matrix.architecture}}"' ]]; then
-  #           echo "flag set to true"
-  #           echo "flag=true" >> $GITHUB_OUTPUT;
-  #       else           
-  #           echo "flag set to false"
-  #           echo "flag=false" >> $GITHUB_OUTPUT;
-  #       fi
-  #   outputs:
-  #     arch_flag: ${{ steps.check-arch.outputs.flag }} 
-  
      
 
   build:
@@ -176,7 +136,7 @@ jobs:
     # https://github.com/docker/metadata-action
     - name: Extract Docker metadata
       id: meta
-      if: ${{needs.controller.outputs.arch_flag == 'true' }}
+      if: ${{ needs.setup.outputs.enable == 'true' }}
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
         images: ${{ inputs.registry }}/${{ steps.build.outputs.image_name }}
