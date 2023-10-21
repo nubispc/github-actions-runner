@@ -320,38 +320,41 @@ jobs:
       run: cosign version
  
     - name: Create manifest for ${{ needs.build.outputs.image_name }}
-      id: debug-echo
+      id: create-manifest
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}      
       run: |
-          amend_command=""
-          for i in ${{ steps.query-build-variables.outputs.arch_array }}; do
-            amend_image=`echo " --amend" ${{ steps.set-image-name.outputs.image_name }}:$i-$SHA ` ;
-            amend_command=$amend_image$amend_command;
-          done
-          echo "-------------------- amend command -------------------"
-          echo $amend_command
-          echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
-          echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
-              `echo $amend_command`
-          echo docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
+        amend_command=""
+        for i in ${{ steps.query-build-variables.outputs.arch_array }}; do
+          amend_image=`echo " --amend" ${{ steps.set-image-name.outputs.image_name }}:$i-$SHA ` ;
+          amend_command=$amend_image$amend_command;
+        done
+        echo "-------------------- amend command -------------------"
+        echo $amend_command
+        docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
+        docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
+            `echo $amend_command`
+        docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
+        VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`          
+        echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"          
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
 
-    - name: Create manifest for ${{ needs.build.outputs.image_name }}
-      id: create-manifest
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      run: |
-          VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
-          VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
-          VAR3=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[2]) }}-$SHA )
-          docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
-          docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
-              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
-              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) \
-              --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR3) 
-          VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`
-          echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"
-      env:
-        SHA: ${{ steps.short-sha.outputs.sha }}
+    # - name: Create manifest for ${{ needs.build.outputs.image_name }}
+    #   id: create-manifest
+    #   if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+    #   run: |
+    #       VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
+    #       VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
+    #       VAR3=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[2]) }}-$SHA )
+    #       docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
+    #       docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
+    #           --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
+    #           --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) \
+    #           --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR3) 
+    #       VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`
+    #       echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"
+    #   env:
+    #     SHA: ${{ steps.short-sha.outputs.sha }}
 
     - name: Sign the published Docker image
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
