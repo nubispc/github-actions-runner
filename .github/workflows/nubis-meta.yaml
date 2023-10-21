@@ -95,8 +95,8 @@ jobs:
       registry: ${{ needs.prepare.outputs.registry }}
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
-      harbor_user: ${{ secret.HARBOR_USER }}
-      harbor_secret: ${{ secret.HARBOR_SECRET }}
+      harbor_user: ${{ secrets.HARBOR_USER }}
+      harbor_secret: ${{ secrets.HARBOR_SECRET }}
 
   build:
     needs: [prepare, build-base]
@@ -111,7 +111,7 @@ jobs:
       registry: ${{ needs.prepare.outputs.registry }}
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
-      harbor_user: ${{ secret.HARBOR_USER }}
-      harbor_secret: ${{ secret.HARBOR_SECRET }}
+      harbor_user: ${{ secrets.HARBOR_USER }}
+      harbor_secret: ${{ secrets.HARBOR_SECRET }}
 
 
