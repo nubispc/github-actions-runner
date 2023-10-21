@@ -16,6 +16,10 @@ on:
     secrets:
         nbfc_priv_secret:
           required: true
+        harbor_secret:
+          required: true          
+        harbor_user:
+          required: true
 
 env:
     manifest_file: dockerImages_build_manifest.json
@@ -165,8 +169,8 @@ jobs:
       uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
       with:
         registry: ${{ inputs.REGISTRY }}
-        username: ${{ secrets.HARBOR_USER }}
-        password: ${{ secrets.HARBOR_SECRET }}
+        username: ${{ secrets.harbor_user }}
+        password: ${{ secrets.harbor_secret }}
 
     # Extract metadata (tags, labels) for Docker
     # https://github.com/docker/metadata-action
@@ -297,8 +301,8 @@ jobs:
       uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
       with:
         registry: ${{ inputs.REGISTRY }}
-        username: ${{ secrets.HARBOR_USER }}
-        password: ${{ secrets.HARBOR_SECRET }}
+        username: ${{ secrets.harbor_user }}
+        password: ${{ secrets.harbor_secret }}
 
     - name: Set image name
       id: set-image-name
