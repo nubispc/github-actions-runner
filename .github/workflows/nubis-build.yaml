@@ -322,10 +322,8 @@ jobs:
     - name: Create manifest for ${{ needs.build.outputs.image_name }}
       id: debug-echo
       run: |
-          arrayValue=("")
-          for i in {1..${{ steps.query-build-variables.outputs.dockerImage_build_length }}}; do 
-            echo $i;
-            arrayValue+=
+          for i in ${{ steps.query-build-variables.outputs.arch_array }}; do 
+            echo "--amend" ${{ steps.set-image-name.outputs.image_name }}:$i-$SHA ;
           done
           echo docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
           echo docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
