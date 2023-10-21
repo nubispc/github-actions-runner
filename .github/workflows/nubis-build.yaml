@@ -325,7 +325,9 @@ jobs:
           amend_command=""
           for i in ${{ steps.query-build-variables.outputs.arch_array }}; do
             amend_image=`echo " --amend" ${{ steps.set-image-name.outputs.image_name }}:$i-$SHA ` ;
+            echo "amend_image: " $amend_image
             amend_command=$amend_image$amend_command;
+            echo "amend_command: " $amend_command
           done
           echo "-------------------- amend command -------------------"
           echo $amend_command
