@@ -276,7 +276,7 @@ jobs:
         echo $dockerImage_build
         echo "dockerImage_arch=$dockerImage_build" >> "$GITHUB_OUTPUT"
 
-        arch_array=$(echo $build_values | jq -rce '[.[].arch]' | sed 's/[\[\]//g' | sed 's/,/ /g')
+        arch_array=$(echo $build_values | jq -rce '[.[].arch]' | sed 's/[\[\]//g' | sed 's/\]//g' | sed 's/,/ /g')
         echo "arch_array: ================"
         echo $arch_array
         echo "arch_array=$arch_array" >> "$GITHUB_OUTPUT" 
