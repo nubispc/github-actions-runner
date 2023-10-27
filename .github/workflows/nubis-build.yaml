@@ -13,6 +13,11 @@ on:
       registry:
         required: true
         type: string
+
+      output_tag:
+        required: true
+        type: string
+        default: "generic"
     secrets:
         nbfc_priv_secret:
           required: true

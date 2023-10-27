@@ -29,6 +29,7 @@ jobs:
         manifest_matrix: ${{ steps.parse-manifest.outputs.matrix }}
         build_level0: ${{ steps.parse-manifest.outputs.build_level0_matrix}}
         build_level1: ${{ steps.parse-manifest.outputs.build_level1_matrix}}
+        output_tag: ${{ steps.parse-manifest.outputs.output_manifest_tag}}
 
       steps:
       - name: Checkout
@@ -97,6 +98,7 @@ jobs:
       matrix: ${{ needs.prepare.outputs.matrix }}
       dockerfile: ${{ matrix.dockerfiles.image_filename }}
       registry: ${{ needs.prepare.outputs.registry }}
+      output_tag: ${{ needs.prepare.outputs.output_tag }}
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
       harbor_user: ${{ secrets.HARBOR_USER }}
@@ -113,6 +115,7 @@ jobs:
       matrix: ${{ needs.prepare.outputs.matrix }}
       dockerfile: ${{ matrix.dockerfiles.image_filename }}
       registry: ${{ needs.prepare.outputs.registry }}
+      output_tag: ${{ needs.prepare.outputs.output_tag }}
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
       harbor_user: ${{ secrets.HARBOR_USER }}
