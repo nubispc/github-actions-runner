@@ -43,7 +43,7 @@ jobs:
             echo "::set-output name=enable::true"
           fi
           # Enable build
-          echo "::set-output name=enable::true"
+          echo "::set-output name=enable::false"
         shell: bash
       - name: Read exported variable
         run: |

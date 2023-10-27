@@ -21,5 +21,6 @@
             "architecture": ["x86_64", "aarch64", "armv7l"],
             "build_level": 1
         }
-    ]
+    ],
+    "output_manifest_tag": "gkoletsos"
 }
