@@ -80,7 +80,7 @@ jobs:
           echo $build_level0_matrix
           echo "build1:"
           echo $build_level1_matrix
-          output_manifest_tag=$(cat ${{github.workspace}}/${{env.manifest_file}} | jq -e .output_manifest_tag)
+          output_manifest_tag=$(cat ${{github.workspace}}/${{env.manifest_file}} | jq -rce .output_manifest_tag)
           echo "output_manifest_tag:"
           echo $output_manifest_tag
           echo "output_manifest_tag=$output_manifest_tag" >> $GITHUB_OUTPUT
