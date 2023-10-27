@@ -299,11 +299,11 @@ jobs:
         done
         echo "-------------------- amend command -------------------"
         echo $amend_command
-        docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
-        docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
+        docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }} || true
+        docker manifest create ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }} \
             `echo $amend_command`
-        docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic
-        VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`          
+        docker manifest push ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }}
+        VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }} | tail -1`          
         echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"          
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
