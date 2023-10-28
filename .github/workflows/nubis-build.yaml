@@ -105,6 +105,13 @@ jobs:
          else
              echo "dockerfilename=$FILENAME" >> "$GITHUB_OUTPUT"
          fi
+    
+    - name: conditional base image calculations
+      id: base-image-calculator
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true'  && inputs.dockerfile == 'Dockerfile.gcc-lite' }} 
+      run: |
+        base_image=nubificus_base_build=harbor.nbfc.io/nubificus/gh-actions-runner-base:${{inputs.output_tag}}
+        echo "base_image=$base_image" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
       uses: actions/checkout@v3
@@ -162,7 +169,7 @@ jobs:
         #cache-from: type=local,src=/tmp
         #cache-to: type=local,mode=max,dest=/tmp
         file: ${{ steps.fix-filename.outputs.dockerfilename }}
-        build-contexts: nubificus_base_build=harbor.nbfc.io/nubificus/gh-actions-runner-base:${{inputs.output_tag}}
+        build-contexts: ${{ steps.base-image-calculator.outputs.base_image }}
         provenance: false
 
     # Sign the resulting Docker image digest except on PRs.
