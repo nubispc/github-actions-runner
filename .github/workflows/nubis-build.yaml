@@ -169,7 +169,8 @@ jobs:
         #cache-from: type=local,src=/tmp
         #cache-to: type=local,mode=max,dest=/tmp
         file: ${{ steps.fix-filename.outputs.dockerfilename }}
-        build-contexts: ${{ steps.base-image-calculator.outputs.base_image }}
+        build-contexts: |
+          ${{ steps.base-image-calculator.outputs.base_image }}
         provenance: false
 
     # Sign the resulting Docker image digest except on PRs.
