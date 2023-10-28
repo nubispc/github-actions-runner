@@ -162,7 +162,7 @@ jobs:
         #cache-from: type=local,src=/tmp
         #cache-to: type=local,mode=max,dest=/tmp
         file: ${{ steps.fix-filename.outputs.dockerfilename }}
-        build_contexts: nubificus_base_build=harbor.nbfc.io/nubificus/gh-actions-runner-base:${{inputs.output_tag}}
+        build-contexts: nubificus_base_build=harbor.nbfc.io/nubificus/gh-actions-runner-base:${{inputs.output_tag}}
         provenance: false
 
     # Sign the resulting Docker image digest except on PRs.
