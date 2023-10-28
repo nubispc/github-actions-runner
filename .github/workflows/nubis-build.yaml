@@ -110,7 +110,7 @@ jobs:
       id: base-image-calculator
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true'  && inputs.dockerfile == 'Dockerfile.gcc-lite' }} 
       run: |
-        base_image=nubificus_base_build=harbor.nbfc.io/nubificus/gh-actions-runner-base:${{inputs.output_tag}}
+        base_image=nubificus_base_build=harbor.nbfc.io/nubificus/gh-actions-runner-base:generic
         echo "base_image=$base_image" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
