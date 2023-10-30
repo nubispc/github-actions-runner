@@ -1,6 +1,8 @@
-FROM harbor.nbfc.io/nubificus/gh-actions-runner-base:generic
+# FROM harbor.nbfc.io/nubificus/gh-actions-runner-base:generic
 #ARG BASE_IMAGE
 #FROM ${BASE_IMAGE}
+
+FROM nubificus_base_build
 
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
 ARG UBUNTU_VERSION=2004
