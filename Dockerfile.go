@@ -9,7 +9,7 @@ ENV GO_VERSION=1.20.3
 RUN export ARCH_INFO=$(echo aarch64)
 ENV ARCH_INFO=${ARCH_INFO}
 
-RUN export ARCH_INFO=$(echo aarch64) && echo ${ARCH_INFO} && echo "blah" && sudo mkdir -p /golang && \
+RUN export ARCH_INFO=$TARGETARCH && echo ${ARCH_INFO} && echo "blah" && sudo mkdir -p /golang && \
     if [ "$ARCH_INFO" = "x86_64" ]; then \
         curl -s -L -o go_archive.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz; \
     elif [ "$ARCH_INFO" = "arm64" ] || [ "$ARCH_INFO" = "aarch64" ]; then \
