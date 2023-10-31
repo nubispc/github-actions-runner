@@ -122,3 +122,16 @@ jobs:
       harbor_secret: ${{ secrets.HARBOR_SECRET }}
 
 
+  postCleanup:
+    name: post-cleanup
+    needs: [ prepare, base-build, build ]
+    runs-on: [ self-hosted, gcc, lite ]
+
+    steps:
+    - name: Purge current job variables
+      id: list_repo_variables
+      run: |
+          repo_var=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.NBFC_BUILD }}" -H "X-GitHub-Api-Version: 2022-11-28"  https://api.github.com/repos/${{github.repository}}/actions/variables?per_page=300)
+          job_vars_to_delete=`echo $repo_var | jq -r '.variables[] |select(.name |test("_${{ github.run_id }}."))' | jq -rc '.name'`
+          echo $job_vars_to_delete
+          for i in `echo $job_vars_to_delete`; do echo curl -L   -X DELETE   -H "Accept: application/vnd.github+json"   -H "Authorization: Bearer ${{ secrets.nbfc_priv_secret }}"  -H "X-GitHub-Api-Version: 2022-11-28"   https://api.github.com/repos/${{github.repository}}/actions/variables/$i ;done
