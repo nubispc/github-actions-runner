@@ -93,19 +93,6 @@ jobs:
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
 
-    - name: Fix filename
-      id: fix-filename
-      run: |
-         ARCH=$( echo "${{ matrix.architecture }}" )
-         FILENAME=$( echo "${{ inputs.dockerfile }}" )   
-         if [ $ARCH == "aarch64" ] && [ $FILENAME == "Dockerfile.jetson" ];
-         then
-             FILENAME=$( echo "jetson-aarch64-dockerfile" )   
-             echo "dockerfilename=$FILENAME" >> "$GITHUB_OUTPUT"
-         else
-             echo "dockerfilename=$FILENAME" >> "$GITHUB_OUTPUT"
-         fi
-    
     - name: conditional base image calculations
       id: base-image-calculator
       if: |

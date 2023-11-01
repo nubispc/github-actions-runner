@@ -18,7 +18,7 @@
         },
         {
             "image_filename": "Dockerfile.rust",
-            "architecture": ["x86_64", "aarch64"],
+            "architecture": ["x86_64", "aarch64", "armv7l"],
             "build_level": 1
         },        
         {
@@ -27,5 +27,5 @@
             "build_level": 1
         }          
     ],
-    "output_manifest_tag": "testing"
+    "output_manifest_tag": "testing2"
 }
