@@ -109,8 +109,7 @@ jobs:
     - name: conditional base image calculations
       id: base-image-calculator
       if: |
-        ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true'  && 
-        (inputs.dockerfile == 'Dockerfile.gcc-lite' || inputs.dockerfile == 'Dockerfile.go') }} 
+        ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
         base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-base:${{ inputs.output_tag }}
         echo "base_image=$base_image" >> "$GITHUB_OUTPUT"

@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - gk_gh_actions_runners
+      - feat_gk_test_others
   workflow_dispatch:
 
 env:
