@@ -126,7 +126,7 @@ jobs:
 
   postCleanup:
     name: post-cleanup
-    needs: [ prepare, build-base ]
+    needs: [ prepare, build-base, build ]
     runs-on: [ self-hosted, gcc, lite ]
 
     steps:
