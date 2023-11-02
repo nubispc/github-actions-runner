@@ -126,6 +126,7 @@ jobs:
 
   postCleanup:
     name: post-cleanup
+    permissions: write-all
     needs: [ prepare, build-base, build ]
     runs-on: [ self-hosted, gcc, lite ]
 
