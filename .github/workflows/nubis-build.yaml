@@ -156,7 +156,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         #cache-from: type=local,src=/tmp
         #cache-to: type=local,mode=max,dest=/tmp
-        file: ${{ steps.fix-filename.outputs.dockerfilename }}
+        file: ${{ inputs.dockerfile }}
         build-contexts: |
           ${{ steps.base-image-calculator.outputs.base_image }}
         provenance: false
