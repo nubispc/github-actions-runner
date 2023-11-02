@@ -133,7 +133,7 @@ jobs:
     - name: Purge current job variables
       id: list_repo_variables
       run: |
-          repo_var=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{secrets.GITHUB_TOKEN}}" -H "X-GitHub-Api-Version: 2022-11-28"  -H "per_page: 100" https://api.github.com/repos/${{github.repository}}/actions/variables)
+          repo_var=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.NBFC_BUILD }}" -H "X-GitHub-Api-Version: 2022-11-28"  -H "per_page: 100" https://api.github.com/repos/${{github.repository}}/actions/variables)
           echo $repo_var
           job_vars_to_delete=`echo $repo_var | jq -r '.variables[] |select(.name |test("_${{ github.run_id }}."))' | jq -rc '.name'`
           echo $job_vars_to_delete
