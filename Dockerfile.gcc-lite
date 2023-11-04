@@ -1,9 +1,3 @@
-#ARG BASE_IMAGE_TAG
-
-#FROM harbor.nbfc.io/nubificus/gh-actions-runner-base:${BASE_IMAGE_TAG}
-#ARG BASE_IMAGE
-#FROM ${BASE_IMAGE}
-
 FROM nubificus_base_build
 
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
