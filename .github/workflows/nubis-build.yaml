@@ -103,14 +103,11 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
+
     - name: Install cosign
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       uses: sigstore/cosign-installer@v3.1.1
-      with:
-        cosign-release: 'v1.13.1'
-    - name: Check install!
-      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      run: cosign version
+
     - name: Set up Docker Context for Buildx
       id: buildx-context
       run: |
@@ -161,18 +158,20 @@ jobs:
           ${{ steps.base-image-calculator.outputs.base_image }}
         provenance: false
 
-    # Sign the resulting Docker image digest except on PRs.
-    # This will only write to the public Rekor transparency log when the Docker
-    # repository is public to avoid leaking data.  If you would like to publish
-    # transparency data even for private images, pass --force to cosign below.
-    # https://github.com/sigstore/cosign
     - name: Sign the published Docker image
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       env:
         COSIGN_EXPERIMENTAL: "true"
-      # This step uses the identity token to provision an ephemeral certificate
-      # against the sigstore community Fulcio instance.
-      run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+        DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        TAGS: ${{ steps.docker_meta.outputs.tags }}
+      # run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+      run: |
+        cosign sign --yes ${{ inputs.registry }}/${{ steps.build.outputs.image_name }}@${{steps.build-and-push.outputs.digest}} \
+        -a "repo=${{github.repository}}" \
+        -a "workflow=${{github.workflow}}" \
+        -a "ref=${{github.sha}}" \
+        -a "author=Nubificus LTD"
+
     - name: Clean up Docker Context for Buildx
       id: buildx-context-cleanup
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
@@ -295,27 +294,16 @@ jobs:
       env:
         SHA: ${{ steps.short-sha.outputs.sha }}
 
-    # - name: Create manifest for ${{ needs.build.outputs.image_name }}
-    #   id: create-manifest
-    #   if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-    #   run: |
-    #       VAR1=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[0]) }}-$SHA )
-    #       VAR2=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[1]) }}-$SHA )
-    #       VAR3=$(echo ${{ toJSON(fromJson(inputs.matrix).architecture[2]) }}-$SHA )
-    #       docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:generic || true
-    #       docker manifest create ${{ steps.set-image-name.outputs.image_name }}:generic \
-    #           --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR1) \
-    #           --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR2) \
-    #           --amend ${{ steps.set-image-name.outputs.image_name }}:$(echo $VAR3) 
-    #       VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:generic | tail -1`
-    #       echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"
-    #   env:
-    #     SHA: ${{ steps.short-sha.outputs.sha }}
-
     - name: Sign the published Docker image
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       env:
         COSIGN_EXPERIMENTAL: "true"
-      # This step uses the identity token to provision an ephemeral certificate
-      # against the sigstore community Fulcio instance.
-      run: echo "${{ steps.set-image-name.outputs.image_name }}" | xargs -I {} cosign sign {}@${{ steps.create-manifest.outputs.manifest_sha }}
+        DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        TAGS: ${{ steps.docker_meta.outputs.tags }}
+      # run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+      run: |
+        cosign sign --yes ${{ steps.set-image-name.outputs.image_name }}@${{steps.create-manifest.outputs.manifest_sha }} \
+        -a "repo=${{github.repository}}" \
+        -a "workflow=${{github.workflow}}" \
+        -a "ref=${{github.sha}}" \
+        -a "author=Nubificus LTD"
