@@ -57,7 +57,7 @@ jobs:
       - name: get supported dockerfile architecture
         id: get-docker-arch
         run: |
-          docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}"))')
+          docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}$"))')
           echo $docker_arch_manifest
           echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
 

@@ -2,13 +2,17 @@ FROM nubificus_base_build
 
 USER root
 
-# Install OpenCV
+# Install OpenCV & updated cmake
 
+# Add Kitware APT repository for updated CMake version
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends \
-  libopencv-dev cmake && \
-  apt-get -y clean && \
-  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    apt-get install -y --no-install-recommends \
+    apt-transport-https ca-certificates gnupg && \
+    apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-latest.asc' && \
+    echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list && \
+    apt-get update && \
+    apt-get install -y libopencv-dev cmake && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Install Python and Numpy
