@@ -27,7 +27,7 @@
             "build_level": 1
         },
         {
-            "image_filename": "Dockerfile.opencv-cuda",
+            "image_filename": "Dockerfile.cuda-opencv",
             "architecture": ["x86_64"],
             "build_level": 1
         }

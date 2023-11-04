@@ -1,6 +1,7 @@
 #FROM harbor.nbfc.io/nubificus/gh-actions-runner:multi_gcc.lite_x86_64
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE}
+#FROM ${BASE_IMAGE}
+FROM nubificus_base_image
 
 
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
