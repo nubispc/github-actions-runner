@@ -81,11 +81,6 @@ RUN apt-get update && \
 # Remove any other version of GCC and G++
 RUN apt-get remove -y gcc-9 g++-9
 
-## Set default gcc and g++ to version 8
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
-
-
 # Build and install OpenCV.
 RUN cd opencv && \
     mkdir build && \
