@@ -103,8 +103,6 @@ RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${O
 
 # Install build-essential and update cmake
 RUN apt-get update && \
-    # Remove any other version of GCC and G++
-    apt-get remove -y gcc-9 g++-9 && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \

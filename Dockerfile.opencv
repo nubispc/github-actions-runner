@@ -67,7 +67,7 @@ RUN apt-get remove -y gcc && \
 
 
 # Remove any other version of GCC and G++
-RUN apt-get remove -y gcc-9 g++-9
+#RUN apt-get remove -y gcc-9 g++-9
 
 # Install build-essential and update cmake
 RUN apt-get update && \
