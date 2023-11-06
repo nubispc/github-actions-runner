@@ -103,6 +103,8 @@ RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${O
 
 # Install build-essential and update cmake
 RUN apt-get update && \
+    # Remove any other version of GCC and G++
+    apt-get remove -y gcc-9 g++-9 && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
@@ -110,9 +112,7 @@ RUN apt-get update && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    # Remove any other version of GCC and G++
-    apt-get remove -y gcc-9 g++-9
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Clone OpenCV and OpenCV_contrib repositories and Build and install OpenCV.
 RUN git clone https://github.com/opencv/opencv.git && \

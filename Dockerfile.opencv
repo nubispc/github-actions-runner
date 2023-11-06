@@ -66,6 +66,8 @@ RUN apt-get remove -y gcc && \
     apt-get autoremove -y
 
 
+# Remove any other version of GCC and G++
+RUN apt-get remove -y gcc-9 g++-9
 
 # Install build-essential and update cmake
 RUN apt-get update && \
@@ -78,8 +80,6 @@ RUN apt-get update && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Remove any other version of GCC and G++
-RUN apt-get remove -y gcc-9 g++-9
 
 # Build and install OpenCV.
 RUN cd opencv && \
