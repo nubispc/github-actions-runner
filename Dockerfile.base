@@ -67,6 +67,10 @@ RUN apt-get -y update && \
 RUN groupadd -g 121 runner && useradd -mr -d /home/runner -u 1001 -g 121 runner && \
     install-runner
 
+
+RUN apt update && apt install -y gcc-12 g++-12 && apt-get -y clean && \
+    rm -rf /virtual-environments /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 COPY entrypoint.sh /
 WORKDIR /home/runner
 USER runner
