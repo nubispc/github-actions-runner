@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
 ARG UBUNTU_VERSION=2004
@@ -11,18 +11,18 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install base packages.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    TZ=Etc/UTC apt-get install -y --no-install-recommends \
     ca-certificates \
-    sudo=1.8.* \
-    lsb-release=11.1.* \
-    software-properties-common=0.99.* \
-    gnupg-agent=2.2.* \
-    openssh-client=1:8.* \
-    make=4.*\
+    sudo \
+    lsb-release \
+    software-properties-common \
+    gnupg-agent \
+    openssh-client \
+    make \
     rsync \
     wget \
-    jq=1.* \
-    amazon-ecr-credential-helper=0.3.* \
+    jq \
+    amazon-ecr-credential-helper \
     curl && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -48,16 +48,18 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg > /etc/apt/trusted.g
 # Copy scripts.
 COPY scripts/ /usr/local/bin/
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
 # Install additional distro packages and runner virtual envs
 ARG VIRTUAL_ENV_PACKAGES=""
 ARG VIRTUAL_ENV_INSTALLS="basic python aws azure-cli docker-compose nodejs"
 RUN apt-get -y update && \
-    ( [ -z "$VIRTUAL_ENV_PACKAGES" ] || apt-get -y --no-install-recommends install $VIRTUAL_ENV_PACKAGES ) && \
-    . /usr/local/bin/install-from-virtual-env-helpers && \
+    ( [ -z "$VIRTUAL_ENV_PACKAGES" ] || TZ=Etc/UTC apt-get -y --no-install-recommends install $VIRTUAL_ENV_PACKAGES ) && \
+    TZ=Etc/UTC . /usr/local/bin/install-from-virtual-env-helpers && \
     for package in ${VIRTUAL_ENV_INSTALLS}; do \
-        install-from-virtual-env $package;  \
+        TZ=Etc/UTC install-from-virtual-env $package;  \
     done && \
-    apt-get -y install --no-install-recommends gosu=1.* && \
+    TZ=Etc/UTC apt-get -y install --no-install-recommends gosu=1.* && \
     apt-get -y clean && \
     rm -rf /virtual-environments /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
