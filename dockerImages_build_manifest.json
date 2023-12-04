@@ -2,23 +2,13 @@
     "dockerfile_build_components":
     [
         {
-            "image_filename": "Dockerfile.gcc-lite",
+            "image_filename": "Dockerfile.base-2204",
             "architecture": ["x86_64", "aarch64", "armv7l"],
             "build_level": 0
         },
         {
-            "image_filename": "Dockerfile.rust",
+            "image_filename": "Dockerfile.gcc-lite",
             "architecture": ["x86_64", "aarch64", "armv7l"],
-            "build_level": 1
-        },
-        {
-            "image_filename": "Dockerfile.opencv",
-            "architecture": ["x86_64", "aarch64"],
-            "build_level": 1
-        },
-        {
-            "image_filename": "Dockerfile.go",
-            "architecture": ["x86_64", "aarch64"],
             "build_level": 1
         }
     ],
