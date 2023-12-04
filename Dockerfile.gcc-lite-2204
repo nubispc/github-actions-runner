@@ -1,4 +1,4 @@
-FROM harbor.nbfc.io/nubificus/gh-actions-runner-base:latest
+FROM harbor.nbfc.io/nubificus/gh-actions-runner-base-2204:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
