@@ -1,14 +1,4 @@
-#FROM harbor.nbfc.io/nubificus/gh-actions-runner:multi_gcc.lite_x86_64
-#ARG BASE_IMAGE
-#FROM ${BASE_IMAGE}
 FROM nubificus_base_build
-
-
-# This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
-ARG UBUNTU_VERSION=2004
-ARG VIRTUAL_ENVIRONMENT_VERSION=ubuntu20/20230109.1
-
-ENV UBUNTU_VERSION=${UBUNTU_VERSION} VIRTUAL_ENVIRONMENT_VERSION=${VIRTUAL_ENVIRONMENT_VERSION}
 
 # Set environment variable to prevent interactive installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -78,9 +68,6 @@ RUN apt update && TZ=Etc/UTC \
 RUN apt-get remove -y gcc && \
     apt-get autoremove -y
 
-# Add sudo rule for runner user
-RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
-
 ### Install NVIDIA CUDA, CUDNN
 ARG OS=ubuntu2004
 RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
@@ -137,12 +124,6 @@ RUN git clone https://github.com/opencv/opencv.git && \
     cd ../../ && \
     rm -rf opencv opencv_contrib
 
-
-
-# Copy scripts.
-COPY scripts/ /usr/local/bin/
-
-COPY entrypoint.sh /
 WORKDIR /home/runner
 USER runner
 ENTRYPOINT ["/entrypoint.sh"]
