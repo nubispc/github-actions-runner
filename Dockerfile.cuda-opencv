@@ -21,8 +21,8 @@ RUN apt update && TZ=Etc/UTC \
     apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
-    # gcc-8 \
-    # g++-8 \
+    gcc-8 \
+    g++-8 \
     ninja-build \
     gdb \
     git \
@@ -101,26 +101,16 @@ RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${O
         apt-get -y clean && \
         rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Add Kitware APT repository for updated CMake version
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    apt-transport-https ca-certificates gnupg && \
-    apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-latest.asc' && \
-    echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list && \
-    apt-get update
-
-
 # Install build-essential and update cmake
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
-    apt-get install -y --no-install-recommends gcc-10 g++-10 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 && \
+    apt-get install -y --no-install-recommends gcc-8 g++-8 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 
 # Install Java Development Kit (JDK)
 RUN apt-get update && \
@@ -135,7 +125,6 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 RUN git clone https://github.com/opencv/opencv.git && \
     git clone https://github.com/opencv/opencv_contrib.git && \
     cd opencv && \
-    git checkout 3.4 && \
     mkdir build && \
     cd build && \
     cmake -GNinja -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
