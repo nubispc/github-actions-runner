@@ -110,16 +110,14 @@ RUN apt-get update && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    # Remove any other version of GCC and G++
+    apt-get remove -y gcc-9 g++-9 && \
+    # Set default gcc and g++ to version 8
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
 
-# Install Java Development Kit (JDK)
-RUN apt-get update && \
-    apt-get install -y default-jdk && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/default-java
 
 # Clone OpenCV and OpenCV_contrib repositories and Build and install OpenCV.
 RUN git clone https://github.com/opencv/opencv.git && \
