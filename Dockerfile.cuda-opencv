@@ -79,15 +79,10 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
-    apt-get install -y --no-install-recommends gcc-10 g++-10 && \
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Remove previous versions of GCC if installed
-RUN apt-get remove -y gcc && \
-    apt-get autoremove -y
 
 # Add sudo rule for runner user
 RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
@@ -121,13 +116,7 @@ RUN apt-get update && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    # Remove any other version of GCC and G++
-    apt-get remove -y gcc-9 g++-9 && \
-    # Set default gcc and g++ to version 8
-    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
-
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # Clone OpenCV and OpenCV_contrib repositories and Build and install OpenCV.
