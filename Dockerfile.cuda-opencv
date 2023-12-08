@@ -74,15 +74,9 @@ RUN apt update && TZ=Etc/UTC \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install build-essential and update cmake
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends build-essential cmake && \
-    apt-get -y clean && \
-    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+# Remove previous versions of GCC if installed
+RUN apt-get remove -y gcc && \
+    apt-get autoremove -y
 
 # Add sudo rule for runner user
 RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
@@ -118,6 +112,14 @@ RUN apt-get update && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install Java Development Kit (JDK)
+RUN apt-get update && \
+    apt-get install -y default-jdk && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME /usr/lib/jvm/default-java
 
 # Clone OpenCV and OpenCV_contrib repositories and Build and install OpenCV.
 RUN git clone https://github.com/opencv/opencv.git && \
