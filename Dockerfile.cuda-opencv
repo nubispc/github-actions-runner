@@ -142,14 +142,14 @@ RUN cd opencv && \
         -DENABLE_FAST_MATH=ON \
         -DCUDA_FAST_MATH=ON \
         -DWITH_CUBLAS=ON \
-        -DOPENCV_ENABLE_NONFREE=OFF \ # Disable non-free modules if not needed
+        -DOPENCV_ENABLE_NONFREE=OFF \
         -DWITH_GSTREAMER=OFF \
         -DCMAKE_BUILD_TYPE=RELEASE \
         -DBUILD_TESTS=OFF \
         -DBUILD_PERF_TESTS=OFF \
         -DBUILD_EXAMPLES=OFF \
-        -DBUILD_opencv_apps=OFF \ # Disable apps if not needed
-        -DBUILD_opencv_calib3d=ON \ # Enable required components
+        -DBUILD_opencv_apps=OFF \
+        -DBUILD_opencv_calib3d=ON \
         -DBUILD_opencv_core=ON \
         -DBUILD_opencv_cudaarithm=ON \
         -DBUILD_opencv_cudafilters=ON \
