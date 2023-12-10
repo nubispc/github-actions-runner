@@ -137,6 +137,9 @@ RUN git clone https://github.com/opencv/opencv.git && \
 RUN cd opencv && \
     mkdir build && \
     cd build && \
+    echo 'if(POLICY CMP0148)' >> ../CMakeLists.txt && \
+    echo '  cmake_policy(SET CMP0148 OLD)' >> ../CMakeLists.txt && \
+    echo 'endif()' >> ../CMakeLists.txt && \
     cmake -GNinja -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
         -DWITH_CUDA=ON \
         -DENABLE_FAST_MATH=ON \
