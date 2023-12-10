@@ -101,6 +101,16 @@ RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${O
         apt-get -y clean && \
         rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Add Kitware APT repository for updated CMake version
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    apt-transport-https ca-certificates gnupg && \
+    apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-latest.asc' && \
+    echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list && \
+    apt-get update
+
+
+
 # Install build-essential and update cmake
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
