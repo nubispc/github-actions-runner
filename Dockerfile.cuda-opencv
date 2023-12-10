@@ -163,10 +163,8 @@ RUN cd opencv && \
         -DBUILD_opencv_highgui=ON \
         -DBUILD_opencv_imgcodecs=ON \
         -DBUILD_opencv_imgproc=ON \
-        ..
-
-# Build and install OpenCV
-RUN ninja && \
+        .. && \
+    ninja && \
     ninja install && \
     ldconfig && \
     cd ../../ && \
