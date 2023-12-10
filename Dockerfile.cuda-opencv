@@ -111,6 +111,10 @@ RUN apt-get update && \
 
 
 
+# Remove any other version of GCC and G++
+RUN apt-get remove -y gcc-9 g++-9 gcc-10 g++-10 && \
+    apt-get autoremove -y
+    
 # Install build-essential and update cmake
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
@@ -121,8 +125,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential cmake && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    # Remove any other version of GCC and G++
-    apt-get remove -y gcc-9 g++-9 && \
     # Set default gcc and g++ to version 8
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
