@@ -133,8 +133,8 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 
 # Clone OpenCV and OpenCV_contrib repositories and Build and install OpenCV.
 RUN git clone https://github.com/opencv/opencv.git && \
-    git clone https://github.com/opencv/opencv_contrib.git && \
-    cd opencv && \
+    git clone https://github.com/opencv/opencv_contrib.git
+RUN cd opencv && \
     mkdir build && \
     cd build && \
     # Suppress Python-related warnings in CMakeLists.txt
