@@ -93,10 +93,7 @@ jobs:
 
     needs: [setup] 
     steps:
-    - name: forced fail
-      if: ${{ inputs.dockerfile == 'Dockerfile.go-2204' }}
-      run: |
-        exit 1
+
     - name: Build
       id: build
       run: |
