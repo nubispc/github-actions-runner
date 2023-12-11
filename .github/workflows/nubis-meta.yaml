@@ -2,7 +2,7 @@ name: Build NBFC runners
 on:
   push:
     branches:
-      - ubuntu2204
+      - gk_ubuntu2204
   workflow_dispatch:
 
 env:
