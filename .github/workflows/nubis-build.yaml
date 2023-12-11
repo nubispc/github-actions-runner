@@ -99,13 +99,15 @@ jobs:
       run: |
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
+          L1BASE=$( echo "${{ inputs.base_dockerfile }}" | sed s/Dockerfile\.// )
+          echo "base_image_name=$L1BASE" >> "$GITHUB_OUTPUT"          
 
     - name: conditional base image calculations
       id: base-image-calculator
       if: |
         ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
-        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-${{ inputs.base_dockerfile }}:${{ inputs.output_tag }}
+        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-${{ steps.build.outputs.base_image_name }}:${{ inputs.output_tag }}
         echo "base_image=$base_image" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
