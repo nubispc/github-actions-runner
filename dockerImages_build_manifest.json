@@ -13,5 +13,5 @@
             "build_level": 1
         }
     ],
-    "output_manifest_tag": "gkCleanUp"
+    "output_manifest_tag": "gkDynamicBaseImageFix"
 }
