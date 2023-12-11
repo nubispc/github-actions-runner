@@ -22,6 +22,7 @@ on:
       base_dockerfile:
         required: false
         type: string
+        default: "base"
     secrets:
         nbfc_priv_secret:
           required: true
@@ -107,7 +108,7 @@ jobs:
       if: |
         ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
-        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-gcc-lite:${{ inputs.output_tag }}
+        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-${{ inputs.base_dockerfile }}:${{ inputs.output_tag }}
         echo "base_image=$base_image" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
