@@ -71,6 +71,7 @@ jobs:
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    continue-on-error: true
     permissions:
       contents: read
       packages: write
@@ -87,6 +88,10 @@ jobs:
 
     needs: [setup] 
     steps:
+    - name: forced fail
+      if: ${{ inputs.dockerfile == 'Dockerfile.go-2204' }}
+      run: |
+        exit 1
     - name: Build
       id: build
       run: |
