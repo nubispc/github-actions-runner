@@ -118,6 +118,7 @@ jobs:
       dockerfile: ${{ matrix.dockerfiles.image_filename }}
       registry: ${{ needs.prepare.outputs.registry }}
       output_tag: ${{ needs.prepare.outputs.output_tag }}
+      base_dockerfile: ${{ matrix.dockerfiles.base_filename }}
     secrets:
       nbfc_priv_secret: ${{ secrets.NBFC_BUILD }}
       harbor_user: ${{ secrets.HARBOR_USER }}
@@ -127,6 +128,7 @@ jobs:
   postCleanup:
     name: post-cleanup
     permissions: write-all
+    if: ${{ !cancelled() }}
     needs: [ prepare, build-base, build ]
     runs-on: [ self-hosted, gcc, lite ]
 

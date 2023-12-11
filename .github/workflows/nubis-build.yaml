@@ -18,6 +18,11 @@ on:
         required: true
         type: string
         default: "generic"
+
+      base_dockerfile:
+        required: false
+        type: string
+        default: "base"
     secrets:
         nbfc_priv_secret:
           required: true
@@ -71,6 +76,7 @@ jobs:
 
   build:
     runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    continue-on-error: true
     permissions:
       contents: read
       packages: write
@@ -87,18 +93,21 @@ jobs:
 
     needs: [setup] 
     steps:
+
     - name: Build
       id: build
       run: |
           GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
           echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
+          L1BASE=$( echo "${{ inputs.base_dockerfile }}" | sed s/Dockerfile\.// )
+          echo "base_image_name=$L1BASE" >> "$GITHUB_OUTPUT"
 
     - name: conditional base image calculations
       id: base-image-calculator
       if: |
         ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
       run: |
-        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-gcc-lite:${{ inputs.output_tag }}
+        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-${{ steps.build.outputs.base_image_name }}:${{ inputs.output_tag }}
         echo "base_image=$base_image" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
