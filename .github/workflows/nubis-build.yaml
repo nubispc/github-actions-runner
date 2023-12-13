@@ -38,7 +38,7 @@ env:
 jobs:
   setup:
     name: setup
-    runs-on: [ self-hosted, gcc, lite ]
+    runs-on: [ self-hosted ]
 
     steps:
       - uses: actions/checkout@v2
@@ -75,7 +75,7 @@ jobs:
      
 
   build:
-    runs-on: [ self-hosted, "${{ matrix.architecture }}", gcc, lite ]
+    runs-on: [ self-hosted, "${{ matrix.architecture }}" ]
     continue-on-error: true
     permissions:
       contents: read
@@ -203,7 +203,7 @@ jobs:
         -d '{ "name": "_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random_number }}", "value": "{ \"image\": \"${{inputs.dockerfile}}\", \"arch\": \"${{matrix.architecture}}\", \"result\": \"${{ steps.build-and-push.conclusion }}\" }"}'        
 
   manifest:
-    runs-on: [ self-hosted, gcc, lite ]
+    runs-on: [ self-hosted ]
     needs: [setup, build]
 
     

@@ -20,7 +20,7 @@ env:
 jobs:
   prepare:
       name: Generate matrix for build
-      runs-on: [ self-hosted, gcc, lite ]
+      runs-on: [ self-hosted ]
       outputs:
         matrix: ${{ steps.set-matrix.outputs.matrix }}
         matrix2: ${{ steps.set-matrix.outputs.matrix2 }}
@@ -130,7 +130,7 @@ jobs:
     permissions: write-all
     if: ${{ !cancelled() }}
     needs: [ prepare, build-base, build ]
-    runs-on: [ self-hosted, gcc, lite ]
+    runs-on: [ self-hosted ]
 
     steps:
     - name: Purge current job variables
