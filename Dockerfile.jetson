@@ -55,10 +55,6 @@ RUN apt-get update && \
   rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
-# Set default gcc and g++ to version 8
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 && \
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100
-
 WORKDIR /
 # Build jetson-inference and download models
 RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/jetson-inference.git && \
@@ -66,7 +62,7 @@ RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/j
 	git submodule update --init && \
 	mkdir build && \
 	cd build && \
-	cmake ../ && \
+	CC=gcc-8 CXX=g++-8 cmake ../ && \
 	make -j$(nproc) install && \
 	cd /jetson-inference/tools && \
 	./download-models.sh 0 && \
