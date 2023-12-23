@@ -23,6 +23,11 @@ on:
         required: false
         type: string
         default: "base"
+
+      tags:
+        required: false
+        type: string
+        default: "lite"
     secrets:
         nbfc_priv_secret:
           required: true
@@ -75,7 +80,7 @@ jobs:
      
 
   build:
-    runs-on: [ self-hosted, "${{ matrix.architecture }}" ]
+    runs-on: [ self-hosted, "${{ matrix.architecture }}", "${{ inputs.tags }}" ]
     continue-on-error: true
     permissions:
       contents: read
