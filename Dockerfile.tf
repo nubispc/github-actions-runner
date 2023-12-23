@@ -37,8 +37,8 @@ RUN git clone https://github.com/tensorflow/tensorflow.git /tensorflow \
     && git submodule update --init --recursive && \
     cd /tensorflow && \
     ./configure && \
-    bazel build --local_ram_resources=HOST_RAM*.9 \
-            --local_cpu_resources=HOST_CPUS-1 \
+    bazel build --local_ram_resources=7192 \
+            --local_cpu_resources=4 \
             --config=v2 \
             --copt=-O3 \
             --config=opt \
