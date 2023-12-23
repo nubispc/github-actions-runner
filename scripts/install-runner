@@ -27,6 +27,10 @@ case $(dpkg --print-architecture) in
   "arm64")
     _arch=arm64
   ;;
+
+  "armhf")
+    _arch=arm
+  ;;
 esac
 
 curl -sL "https://github.com/actions/runner/releases/download/v${latest_runner_version}/actions-runner-linux-${_arch}-${latest_runner_version}.tar.gz" | tar xzvC /home/runner

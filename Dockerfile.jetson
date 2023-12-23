@@ -1,0 +1,209 @@
+FROM nubificus_base_build as amd64
+
+USER root
+
+# Install build-essential and update cmake
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gcc-8 g++-8 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8 && \
+    apt-get install -y --no-install-recommends build-essential cmake && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+
+### Install NVIDIA CUDA, CUDNN and TENSORRT
+ARG OS=ubuntu2004
+RUN wget http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+	dpkg -i nvidia-machine-learning-repo-${OS}_1.0.0-1_amd64.deb && \
+	apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/machine-learning/repos/${OS}/x86_64/7fa2af80.pub && \
+	wget https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/cuda-${OS}.pin && \
+	mv cuda-${OS}.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+	apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/3bf863cc.pub && \
+	add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/ /" && \
+	apt-get update && \
+	apt-get install -y libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev && \
+	rm -rf /var/cache/apt/archives /var/lib/apt/lists
+
+# Install OpenCV
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  libopencv-dev && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install TensorRT
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends libcudnn8 libcudnn8-dev tensorrt nvidia-cuda-toolkit libgstreamer* libglew-dev libnvinfer-lean8 libnvinfer-vc-plugin8 && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install Python and Numpy
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+  python3-dev \
+  python3-pip \
+  python3-setuptools \
+  python3-wheel \
+  python3-numpy && \
+  apt-get -y clean && \
+  rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+
+WORKDIR /
+# Build jetson-inference and download models
+RUN git clone --branch master --recurse-submodules https://github.com/dusty-nv/jetson-inference.git && \
+	cd jetson-inference && \
+	git submodule update --init && \
+	mkdir build && \
+	cd build && \
+	CC=gcc-8 CXX=g++-8 cmake ../ && \
+	make -j$(nproc) install && \
+	cd /jetson-inference/tools && \
+	./download-models.sh 0 && \
+	cd /jetson-inference/build && \
+	./install-pytorch.sh 0 && \
+	cd / && cp -avf /jetson-inference/data /usr/local/data && \
+	cp -avf /jetson-inference/utils/image/stb /usr/local/include && \
+	rm -rf /jetson-inference
+	
+
+WORKDIR /home/runner
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]
+
+
+#FROM nubificus_base_build as arm64
+
+FROM dustynv/jetson-inference:r35.1.0 as arm64
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	cmake \
+	git \
+	libpython3-dev \
+	pkg-config \
+	python3-numpy \
+	sudo \
+	wget \
+	&& rm -rf /var/lib/apt/lists/*
+
+# we need this for installing download-models.sh and base network models.
+RUN cd /jetson-inference && \
+	git clone https://github.com/dusty-nv/jetson-inference --depth 1
+
+RUN cd /jetson-inference && \
+	cp -a utils/image/stb /usr/local/include && \
+	mkdir /usr/local/share/jetson-inference/tools && \
+	cp tools/download-models.sh /usr/local/share/jetson-inference/tools/ && \
+	mkdir /usr/local/share/jetson-inference/data && \
+	cp -r jetson-inference/data/networks /usr/local/share/jetson-inference/data/ && \
+	sed 's/BUILD_INTERACTIVE=.*/BUILD_INTERACTIVE=0/g' \
+		-i /usr/local/share/jetson-inference/tools/download-models.sh && \
+	unlink /usr/local/bin/images && unlink /usr/local/bin/networks && \
+	ln -s /usr/local/share/jetson-inference/data/networks /usr/local/bin/ && \
+        rm -rf /jetson-inference
+
+WORKDIR /
+
+# This the release tag of virtual-environments: https://github.com/actions/virtual-environments/releases
+ARG UBUNTU_VERSION=2004
+ARG VIRTUAL_ENVIRONMENT_VERSION=ubuntu20/20230109.1
+
+ENV UBUNTU_VERSION=${UBUNTU_VERSION} VIRTUAL_ENVIRONMENT_VERSION=${VIRTUAL_ENVIRONMENT_VERSION}
+
+# Set environment variable to prevent interactive installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Install base packages.
+RUN apt update && TZ=Etc/UTC \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    sudo=1.8.* \
+    lsb-release=11.1.* \
+    software-properties-common=0.99.* \
+    gnupg-agent=2.2.* \
+    openssh-client=1:8.* \
+    make=4.*\
+    rsync \
+    wget \
+    jq=1.* \
+    gcc \
+    g++ \
+    curl && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add sudo rule for runner user
+RUN echo "runner ALL= EXEC: NOPASSWD:ALL" >> /etc/sudoers.d/runner
+
+# Update git.
+RUN add-apt-repository -y ppa:git-core/ppa && \
+    apt-get update && \
+    apt-get -y install --no-install-recommends git && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install docker cli.
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg > /etc/apt/trusted.gpg.d/docker.asc && \
+    echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends docker-ce-cli=5:20.10.* && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add Kitware APT repository for updated CMake version
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    apt-transport-https ca-certificates gnupg && \
+    apt-key adv --fetch-keys 'https://apt.kitware.com/keys/kitware-archive-latest.asc' && \
+    echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list && \
+    apt-get update
+
+
+# Install build-essential and update cmake
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gcc-10 g++-10 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 && \
+    apt-get install -y --no-install-recommends build-essential cmake && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Copy scripts.
+COPY scripts/ /usr/local/bin/
+
+# Try to fix opencv issues if plugin does not build
+RUN apt remove -y opencv-libs opencv-main opencv-scripts opencv-python opencv-dev
+
+# Install additional distro packages and runner virtual envs
+ARG VIRTUAL_ENV_PACKAGES=""
+ARG VIRTUAL_ENV_INSTALLS="basic python nodejs"
+RUN apt-get -y update && \
+    ( [ -z "$VIRTUAL_ENV_PACKAGES" ] || apt-get -y --no-install-recommends install $VIRTUAL_ENV_PACKAGES ) && \
+    . /usr/local/bin/install-from-virtual-env-helpers && \
+    for package in ${VIRTUAL_ENV_INSTALLS}; do \
+        install-from-virtual-env $package;  \
+    done && \
+    apt-get -y install --no-install-recommends gosu=1.* && \
+    apt-get -y clean && \
+    rm -rf /virtual-environments /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install runner and its dependencies.
+RUN groupadd -g 121 runner && useradd -mr -d /home/runner -u 1001 -g 121 runner && \
+    install-runner
+
+COPY entrypoint.sh /
+
+FROM $TARGETARCH as common
+WORKDIR /home/runner
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]

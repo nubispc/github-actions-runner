@@ -1,0 +1,29 @@
+FROM harbor.nbfc.io/nubificus/gh-actions-runner-base:generic
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Install base packages.
+USER root
+RUN apt update && TZ=Etc/UTC \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    curl && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Install build-essential and update cmake
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends gcc-10 g++-10 && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 && \
+    apt-get install -y --no-install-recommends build-essential cmake protobuf-compiler protobuf-c-compiler libclang-dev && \
+    apt-get -y clean && \
+    rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+USER runner
+ENTRYPOINT ["/entrypoint.sh"]

@@ -1,0 +1,323 @@
+name: build-arch
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        required: true
+        type: string
+
+      dockerfile:
+        required: true
+        type: string
+
+      registry:
+        required: true
+        type: string
+
+      output_tag:
+        required: true
+        type: string
+        default: "generic"
+
+      base_dockerfile:
+        required: false
+        type: string
+        default: "base"
+
+      tags:
+        required: false
+        type: string
+        default: "lite"
+    secrets:
+        nbfc_priv_secret:
+          required: true
+        harbor_secret:
+          required: true          
+        harbor_user:
+          required: true
+
+env:
+    manifest_file: dockerImages_build_manifest.json
+
+
+jobs:
+  setup:
+    name: setup
+    runs-on: [ self-hosted ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set test variable
+        id: set-variable
+        run: |
+          if [ ${{ github.ref }} != 'refs/heads/main' ]; then
+            echo "will NOT build dockerfiles"
+            echo "::set-output name=enable::false"
+          else
+            echo "WILL build dockerfiles"
+            echo "::set-output name=enable::true"
+          fi
+          # Enable build
+          echo "::set-output name=enable::true"
+        shell: bash
+      - name: Read exported variable
+        run: |
+          echo "OUTPUT: ${{ steps.set-variable.outputs.enable }}"
+      
+      - name: get supported dockerfile architecture
+        id: get-docker-arch
+        run: |
+          docker_arch_manifest=$(cat ${{github.workspace}}/${{env.manifest_file}}| tr -d '[:space:]' | jq -rc '.dockerfile_build_components // {}' | jq -rc '.[]  |select(.image_filename |test("${{inputs.dockerfile}}$"))')
+          echo $docker_arch_manifest
+          echo "docker_arch_manifest=$docker_arch_manifest" >> $GITHUB_OUTPUT          
+
+    
+
+    outputs:
+      enable: ${{ steps.set-variable.outputs.enable }}
+      docker_prescribed_arch: ${{ steps.get-docker-arch.outputs.docker_prescribed_arch }}
+      dockerimage_manifest_arch: ${{ steps.get-docker-arch.outputs.docker_arch_manifest }}
+     
+
+  build:
+    runs-on: [ self-hosted, "${{ matrix.architecture }}", "${{ inputs.tags }}" ]
+    continue-on-error: true
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+    strategy:
+      matrix: 
+        architecture: ${{ fromJson(needs.setup.outputs.dockerimage_manifest_arch).architecture }}
+      fail-fast: false
+    
+    outputs:
+      image_name: ${{ steps.build.outputs.image_name }}
+
+    needs: [setup] 
+    steps:
+
+    - name: Build
+      id: build
+      run: |
+          GEN=$( echo "${{ inputs.dockerfile }}" | sed s/Dockerfile\.// )
+          echo "image_name=gh-actions-runner-$GEN" >> "$GITHUB_OUTPUT"
+          L1BASE=$( echo "${{ inputs.base_dockerfile }}" | sed s/Dockerfile\.// )
+          echo "base_image_name=$L1BASE" >> "$GITHUB_OUTPUT"
+
+    - name: conditional base image calculations
+      id: base-image-calculator
+      if: |
+        ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: |
+        base_image=nubificus_base_build=docker-image://harbor.nbfc.io/nubificus/gh-actions-runner-${{ steps.build.outputs.base_image_name }}:${{ inputs.output_tag }}
+        echo "base_image=$base_image" >> "$GITHUB_OUTPUT"
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Install cosign
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: sigstore/cosign-installer@v3.1.1
+
+    - name: Set up Docker Context for Buildx
+      id: buildx-context
+      run: |
+          docker context create builders || true
+    # Workaround: https://github.com/docker/build-push-action/issues/461
+    - name: Setup Docker buildx
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+      with:
+        version: latest
+        endpoint: builders
+    # Login against a Docker registry except on PR
+    # https://github.com/docker/login-action
+    - name: Log into registry ${{ inputs.REGISTRY }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      with:
+        registry: ${{ inputs.REGISTRY }}
+        username: ${{ secrets.harbor_user }}
+        password: ${{ secrets.harbor_secret }}
+
+    # Extract metadata (tags, labels) for Docker
+    # https://github.com/docker/metadata-action
+    - name: Extract Docker metadata
+      id: meta
+      if: ${{ needs.setup.outputs.enable == 'true' }}
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ inputs.registry }}/${{ steps.build.outputs.image_name }}
+        tags: |
+          type=sha,prefix=${{ matrix.architecture }}-
+
+    # Build and push Docker image with Buildx (don't push on PR)
+    # https://github.com/docker/build-push-action
+    - name: Build and push ${{ inputs.dockerfile }}-${{ matrix.architecture }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      id: build-and-push
+      uses: docker/build-push-action@master
+      with:
+        context: .
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        #cache-from: type=local,src=/tmp
+        #cache-to: type=local,mode=max,dest=/tmp
+        file: ${{ inputs.dockerfile }}
+        build-contexts: |
+          ${{ steps.base-image-calculator.outputs.base_image }}
+        provenance: false
+
+    - name: Sign the published Docker image
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+        DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        TAGS: ${{ steps.docker_meta.outputs.tags }}
+      # run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+      run: |
+        cosign sign --yes ${{ inputs.registry }}/${{ steps.build.outputs.image_name }}@${{steps.build-and-push.outputs.digest}} \
+        -a "repo=${{github.repository}}" \
+        -a "workflow=${{github.workflow}}" \
+        -a "ref=${{github.sha}}" \
+        -a "author=Nubificus LTD"
+
+    - name: Clean up Docker Context for Buildx
+      id: buildx-context-cleanup
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: |
+          docker context remove builders || true
+
+    - name: random-number-generator
+      id: random-number-generator
+      run:  echo "random_number=$(($RANDOM))" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Store docker images details in var
+      id: update-docker-images-details-variable
+      run: |
+        curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables?per_page=100' \
+        --header 'Accept: application/vnd.github+json' \
+        --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' \
+        --header 'X-GitHub-Api-Version: 2022-11-28' \
+        --header 'Content-Type: application/json' \
+        -d '{ "name": "_${{ github.run_id }}_${{ steps.random-number-generator.outputs.random_number }}", "value": "{ \"image\": \"${{inputs.dockerfile}}\", \"arch\": \"${{matrix.architecture}}\", \"result\": \"${{ steps.build-and-push.conclusion }}\" }"}'        
+
+  manifest:
+    runs-on: [ self-hosted ]
+    needs: [setup, build]
+
+    
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: benjlevesque/short-sha@v2.2
+      id: short-sha
+      with:
+        length: 7
+
+
+    - name: query-build-variables
+      id: query-build-variables
+      run: |
+        sleep 5
+        repo_vars=$(curl --location 'https://api.github.com/repos/${{github.repository}}/actions/variables?per_page=100' --header 'Accept: application/vnd.github+json' --header 'Authorization: Bearer ${{ secrets.nbfc_priv_secret }}' --header 'X-GitHub-Api-Version: 2022-11-28' --header 'Content-Type: application/json')
+        job_run_vars_values=$(echo $repo_vars | jq -rce  '[.variables[] |  select(.name |test("_${{ github.run_id }}."))]')
+        echo "repo variables: ============"
+        echo $job_run_vars_values
+        echo 
+        build_values=$(echo $job_run_vars_values | jq -rce '[.[].value]' | sed 's/[\\]//g' | sed 's/"{/{/g' | sed 's/}"/}/g' | jq -rce '[ .[] | select(.image | contains("${{ inputs.dockerfile }}")) ]')
+        echo "build_values: ================"
+        echo $build_values
+        echo
+        dockerImage_build=$(echo $build_values | jq -rce '[.[].arch]')
+        echo "dockerImage_build: ================"
+        echo $dockerImage_build
+        echo "dockerImage_arch=$dockerImage_build" >> "$GITHUB_OUTPUT"
+
+        arch_array=$(echo $build_values | jq -rce '[.[].arch]' | sed 's/[\[\]//g' | sed 's/\]//g' | sed 's/,/ /g')
+        echo "arch_array: ================"
+        echo $arch_array
+        echo "arch_array=$arch_array" >> "$GITHUB_OUTPUT" 
+                
+        echo "===================="
+        dockerImage_build_length=$(echo $build_values | jq -rce '[.[].arch] | length')
+        echo "dockerImage_build_length: ================"
+        echo $dockerImage_build_length
+        echo "dockerImage_build_length=$dockerImage_build_length" >> "$GITHUB_OUTPUT" 
+
+ 
+
+
+    # Login against a Docker registry except on PR
+    # https://github.com/docker/login-action
+    - name: Log into registry ${{ inputs.REGISTRY }}
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      with:
+        registry: ${{ inputs.REGISTRY }}
+        username: ${{ secrets.harbor_user }}
+        password: ${{ secrets.harbor_secret }}
+
+    - name: Set image name
+      id: set-image-name
+      run: |
+          NAME=$( echo "${{ needs.build.outputs.image_name }}" )
+          REGISTRY=$( echo "${{ inputs.REGISTRY }}" )
+          #NAMESPACE="runners"
+          #echo "image_name=$REGISTRY/$NAMESPACE/$NAME" >> "$GITHUB_OUTPUT"
+          echo "image_name=$REGISTRY/$NAME" >> "$GITHUB_OUTPUT"
+
+    - name: Install cosign
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      uses: sigstore/cosign-installer@v3.1.1
+      with:
+        cosign-release: 'v1.13.1'
+
+    - name: Check install!
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      run: cosign version
+ 
+    - name: Create manifest for ${{ needs.build.outputs.image_name }}
+      id: create-manifest
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}      
+      run: |
+        amend_command=""
+        for i in ${{ steps.query-build-variables.outputs.arch_array }}; do
+          amend_image=`echo " --amend" ${{ steps.set-image-name.outputs.image_name }}:$i-$SHA ` ;
+          amend_command=$amend_image$amend_command;
+        done
+        echo "-------------------- amend command -------------------"
+        echo $amend_command
+        docker manifest rm ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }} || true
+        docker manifest create ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }} \
+            `echo $amend_command`
+        docker manifest push ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }}
+        VAR=`docker manifest push ${{ steps.set-image-name.outputs.image_name }}:${{ inputs.output_tag }} | tail -1`          
+        echo "manifest_sha=$VAR" >> "$GITHUB_OUTPUT"          
+      env:
+        SHA: ${{ steps.short-sha.outputs.sha }}
+
+    - name: Sign the published Docker image
+      if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+        DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        TAGS: ${{ steps.docker_meta.outputs.tags }}
+      # run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+      run: |
+        cosign sign --yes ${{ steps.set-image-name.outputs.image_name }}@${{steps.create-manifest.outputs.manifest_sha }} \
+        -a "repo=${{github.repository}}" \
+        -a "workflow=${{github.workflow}}" \
+        -a "ref=${{github.sha}}" \
+        -a "author=Nubificus LTD"

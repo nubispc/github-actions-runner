@@ -1,0 +1,19 @@
+{
+    "dockerfile_build_components":
+    [
+        {
+            "image_filename": "Dockerfile.gcc-lite",
+	    "tags": "lite",
+            "architecture": ["x86_64", "aarch64","armv7l"],
+            "build_level": 0
+        },
+        {
+            "image_filename": "Dockerfile.rust",
+            "base_filename" : "Dockerfile.gcc-lite",
+	    "tags": "lite",
+            "architecture": ["x86_64", "aarch64","armv7l"],
+            "build_level": 1
+        }
+    ],
+    "output_manifest_tag": "final"
+}
