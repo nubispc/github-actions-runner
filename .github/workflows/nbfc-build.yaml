@@ -120,7 +120,7 @@ jobs:
 
     - name: Install cosign
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      uses: sigstore/cosign-installer@v3.1.1
+      uses: sigstore/cosign-installer@v3.4.0
 
     - name: Set up Docker Context for Buildx
       id: buildx-context
@@ -280,9 +280,7 @@ jobs:
 
     - name: Install cosign
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
-      uses: sigstore/cosign-installer@v3.1.1
-      with:
-        cosign-release: 'v1.13.1'
+      uses: sigstore/cosign-installer@v3.4.0
 
     - name: Check install!
       if: ${{ github.event_name != 'pull_request' && needs.setup.outputs.enable == 'true' }}
