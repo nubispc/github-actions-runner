@@ -1,12 +1,20 @@
 FROM harbor.nbfc.io/nubificus/gh-actions-runner-base-2204:latest
 
+# ENV DEBIAN_FRONTEND=noninteractive
+
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+# Set environment variables globally
+RUN echo 'DEBIAN_FRONTEND=noninteractive' >> /etc/environment && \
+    echo 'TZ=Etc/UTC' >> /etc/environment
+
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install base packages.
 USER root
-RUN apt update && TZ=Etc/UTC \
+RUN apt update && \
     apt-get install -y --no-install-recommends \
     gcc \
     g++ \
@@ -21,10 +29,15 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends gcc-10 g++-10 lcov && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 && \
-    apt-get install -y --no-install-recommends build-essential cmake && \
-    TZ=Etc/UTC apt-get install -y --no-install-recommends gcc-12 g++-12 ninja-build dh-make git-buildpackage && \
+    apt-get install -y --no-install-recommends build-essential cmake gcc-12 g++-12 ninja-build dh-make \
+	git-buildpackage \
+	libxml2-dev libxslt1-dev \
+	libclang-dev valgrind cppcheck && \
     apt-get -y clean && \
     rm -rf /var/cache/apt /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# install pip packages for meson
+RUN pip install meson gcovr pycobertura codespell
 
 USER runner
 ENTRYPOINT ["/entrypoint.sh"]
